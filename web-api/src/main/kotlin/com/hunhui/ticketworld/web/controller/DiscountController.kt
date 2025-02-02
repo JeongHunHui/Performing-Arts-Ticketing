@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-@RequestMapping("/api/v1/discount")
+@RequestMapping("/discount")
 class DiscountController(
     private val discountService: DiscountService,
 ) : DiscountApiDoc {
