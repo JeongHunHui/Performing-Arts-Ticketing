@@ -23,14 +23,14 @@ class Reservation(
         fun getExpireTime(): LocalDateTime = LocalDateTime.now().plusMinutes(EXPIRE_MINUTES)
     }
 
-    /** 예약 가능 여부, 임시 예매가 만료되고 아직 결제되지 않은 경우 True */
+    /** 예매 가능 여부, 임시 예매가 만료되고 아직 결제되지 않은 경우 True */
     val canTempReserve: Boolean
         get() = isTempReservationExpired && !isPaid
 
     private fun canConfirmReserve(userId: UUID): Boolean = tempUserId == userId && !isPaid
 
     fun tempReserve(userId: UUID): Reservation {
-        if (!canTempReserve) throw BusinessException(ReservationErrorCode.CANNOT_RESERVE)
+        if (!canTempReserve) throw BusinessException(ReservationErrorCode.CANNOT_TEMP_RESERVE)
         return Reservation(
             id = id,
             roundId = roundId,
