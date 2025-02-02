@@ -28,13 +28,11 @@ class Reservations(
         )
     }
 
-    fun confirmReserve(paymentId: UUID): Reservations {
-        if (!canConfirmReserve) throw BusinessException(ReservationErrorCode.CANNOT_RESERVE)
-        return Reservations(
+    fun confirmReserve(paymentId: UUID): Reservations =
+        Reservations(
             tryReserveUserId = tryReserveUserId,
             reservations = reservations.map { it.confirmReserve(tryReserveUserId, paymentId) },
         )
-    }
 
     fun getPriceById(priceId: UUID): Money = reservations.first { it.performancePriceId == priceId }.price
 
@@ -45,8 +43,4 @@ class Reservations(
     /** 임시 예매 가능 여부, 모든 예매들이 임시 예매가 만료되고 아직 결제되지 않은 경우 True */
     private val canTempReserve: Boolean
         get() = reservations.all { it.canTempReserve }
-
-    /** 예매 확정 가능 여부, 모든 예매들이 결제되지 않았고, 예약 시도자의 id가 같은 경우 True */
-    private val canConfirmReserve: Boolean
-        get() = reservations.all { it.canConfirmReserve(tryReserveUserId) }
 }

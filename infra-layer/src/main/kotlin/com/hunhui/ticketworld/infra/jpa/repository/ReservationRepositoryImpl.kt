@@ -58,7 +58,7 @@ internal class ReservationRepositoryImpl(
                 price = price.amount,
                 userId = tempUserId,
                 paymentId = paymentId,
-                reservationExpireTime = tempReservationExpireTime,
+                reservationExpireTime = reservationExpireTime,
             )
 
     private val ReservationEntity.domain: Reservation
@@ -72,6 +72,6 @@ internal class ReservationRepositoryImpl(
                 price = Money(price),
                 tempUserId = userId,
                 paymentId = paymentId,
-                tempReservationExpireTime = reservationExpireTime,
+                reservationExpireTime = reservationExpireTime,
             )
 }

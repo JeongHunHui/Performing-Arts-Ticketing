@@ -13,6 +13,7 @@ import com.hunhui.ticketworld.domain.seat.SeatArea
 import com.hunhui.ticketworld.domain.seat.SeatAreaRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Service
@@ -50,7 +51,7 @@ class PerformanceService(
                             price = performance.getPriceById(seat.performancePriceId),
                             tempUserId = null,
                             paymentId = null,
-                            tempReservationExpireTime = null,
+                            reservationExpireTime = LocalDateTime.now(),
                         )
                     }
                 }

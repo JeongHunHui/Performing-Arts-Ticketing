@@ -15,7 +15,7 @@ class Reservation(
     val price: Money,
     val tempUserId: UUID?,
     val paymentId: UUID?,
-    val tempReservationExpireTime: LocalDateTime?,
+    val reservationExpireTime: LocalDateTime,
 ) {
     companion object {
         private const val EXPIRE_MINUTES = 7L
@@ -27,7 +27,7 @@ class Reservation(
     val canTempReserve: Boolean
         get() = isTempReservationExpired && !isPaid
 
-    fun canConfirmReserve(userId: UUID): Boolean = tempUserId == userId && !isPaid
+    private fun canConfirmReserve(userId: UUID): Boolean = tempUserId == userId && !isPaid
 
     fun tempReserve(userId: UUID): Reservation {
         if (!canTempReserve) throw BusinessException(ReservationErrorCode.CANNOT_RESERVE)
@@ -40,7 +40,7 @@ class Reservation(
             price = price,
             tempUserId = userId,
             paymentId = paymentId,
-            tempReservationExpireTime = getExpireTime(),
+            reservationExpireTime = getExpireTime(),
         )
     }
 
@@ -58,13 +58,13 @@ class Reservation(
             price = price,
             tempUserId = tempUserId,
             paymentId = paymentId,
-            tempReservationExpireTime = null,
+            reservationExpireTime = LocalDateTime.now(),
         )
     }
 
     /** 만료시간이 없거나 이미 지났으면 true */
     private val isTempReservationExpired: Boolean
-        get() = tempReservationExpireTime?.isBefore(LocalDateTime.now()) ?: true
+        get() = reservationExpireTime.isBefore(LocalDateTime.now())
 
     private val isPaid: Boolean
         get() = paymentId != null

@@ -28,5 +28,5 @@ internal class ReservationEntity(
     @Column(name = "paymentId", nullable = true)
     val paymentId: UUID?,
     @Column(name = "reservationExpireTime", nullable = true)
-    val reservationExpireTime: LocalDateTime?,
+    val reservationExpireTime: LocalDateTime,
 ) : BaseTimeEntity()
