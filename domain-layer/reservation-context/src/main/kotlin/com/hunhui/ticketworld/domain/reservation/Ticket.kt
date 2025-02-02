@@ -6,7 +6,7 @@ import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode
 import java.time.LocalDateTime
 import java.util.UUID
 
-class Reservation(
+class Ticket(
     val id: UUID,
     val roundId: UUID,
     val seatAreaId: UUID,
@@ -29,9 +29,9 @@ class Reservation(
 
     private fun canConfirmReserve(userId: UUID): Boolean = tempUserId == userId && !isPaid
 
-    fun tempReserve(userId: UUID): Reservation {
+    fun tempReserve(userId: UUID): Ticket {
         if (!canTempReserve) throw BusinessException(ReservationErrorCode.CANNOT_TEMP_RESERVE)
-        return Reservation(
+        return Ticket(
             id = id,
             roundId = roundId,
             seatAreaId = seatAreaId,
@@ -47,9 +47,9 @@ class Reservation(
     fun confirmReserve(
         userId: UUID,
         paymentId: UUID,
-    ): Reservation {
+    ): Ticket {
         if (!canConfirmReserve(userId)) throw BusinessException(ReservationErrorCode.CANNOT_RESERVE)
-        return Reservation(
+        return Ticket(
             id = id,
             roundId = roundId,
             seatAreaId = seatAreaId,

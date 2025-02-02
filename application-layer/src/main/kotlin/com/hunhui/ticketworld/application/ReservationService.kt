@@ -10,9 +10,9 @@ import com.hunhui.ticketworld.domain.discount.DiscountRepository
 import com.hunhui.ticketworld.domain.payment.Payment
 import com.hunhui.ticketworld.domain.payment.PaymentRepository
 import com.hunhui.ticketworld.domain.performance.PerformanceRepository
-import com.hunhui.ticketworld.domain.reservation.Reservation
 import com.hunhui.ticketworld.domain.reservation.ReservationRepository
 import com.hunhui.ticketworld.domain.reservation.Reservations
+import com.hunhui.ticketworld.domain.reservation.Ticket
 import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode
 import com.hunhui.ticketworld.domain.user.UserRepository
 import org.springframework.stereotype.Service
@@ -31,8 +31,8 @@ class ReservationService(
         roundId: UUID,
         areaId: UUID,
     ): ReservationListResponse {
-        val reservationList: List<Reservation> = reservationRepository.findAllByRoundIdAndAreaId(roundId, areaId)
-        return ReservationListResponse.from(reservationList)
+        val ticketList: List<Ticket> = reservationRepository.findTicketsByRoundIdAndAreaId(roundId, areaId)
+        return ReservationListResponse.from(ticketList)
     }
 
     @Transactional

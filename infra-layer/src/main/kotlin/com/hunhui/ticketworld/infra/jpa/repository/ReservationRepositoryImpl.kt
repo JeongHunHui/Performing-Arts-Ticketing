@@ -2,21 +2,21 @@ package com.hunhui.ticketworld.infra.jpa.repository
 
 import com.hunhui.ticketworld.common.error.BusinessException
 import com.hunhui.ticketworld.common.vo.Money
-import com.hunhui.ticketworld.domain.reservation.Reservation
 import com.hunhui.ticketworld.domain.reservation.ReservationRepository
 import com.hunhui.ticketworld.domain.reservation.Reservations
+import com.hunhui.ticketworld.domain.reservation.Ticket
 import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode
-import com.hunhui.ticketworld.infra.jpa.entity.ReservationEntity
+import com.hunhui.ticketworld.infra.jpa.entity.TicketEntity
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
 import java.util.UUID
 
 @Repository
 internal class ReservationRepositoryImpl(
-    private val reservationJpaRepository: ReservationJpaRepository,
+    private val ticketJpaRepository: TicketJpaRepository,
 ) : ReservationRepository {
-    override fun getById(id: UUID): Reservation =
-        reservationJpaRepository.findByIdOrNull(id)?.domain ?: throw BusinessException(ReservationErrorCode.CANNOT_RESERVE)
+    override fun getTicketById(id: UUID): Ticket =
+        ticketJpaRepository.findByIdOrNull(id)?.domain ?: throw BusinessException(ReservationErrorCode.CANNOT_RESERVE)
 
     override fun getReservations(
         ids: List<UUID>,
@@ -24,32 +24,32 @@ internal class ReservationRepositoryImpl(
     ): Reservations =
         Reservations(
             tryReserveUserId = tryReserveUserId,
-            reservations = reservationJpaRepository.findAllById(ids).map { it.domain },
+            tickets = ticketJpaRepository.findAllById(ids).map { it.domain },
         )
 
-    override fun findAllByRoundIdAndAreaId(
+    override fun findTicketsByRoundIdAndAreaId(
         performanceRoundId: UUID,
         seatAreaId: UUID,
-    ): List<Reservation> =
-        reservationJpaRepository
+    ): List<Ticket> =
+        ticketJpaRepository
             .findAllByPerformanceRoundIdAndSeatAreaId(performanceRoundId, seatAreaId)
             .map { it.domain }
 
-    override fun save(reservation: Reservation) {
-        reservationJpaRepository.save(reservation.entity)
+    override fun saveTicket(ticket: Ticket) {
+        ticketJpaRepository.save(ticket.entity)
     }
 
-    override fun saveAll(reservations: List<Reservation>) {
-        reservationJpaRepository.saveAll(reservations.map { it.entity })
+    override fun saveTickets(tickets: List<Ticket>) {
+        ticketJpaRepository.saveAll(tickets.map { it.entity })
     }
 
     override fun saveAll(reservations: Reservations) {
-        reservationJpaRepository.saveAll(reservations.reservations.map { it.entity })
+        ticketJpaRepository.saveAll(reservations.tickets.map { it.entity })
     }
 
-    private val Reservation.entity: ReservationEntity
+    private val Ticket.entity: TicketEntity
         get() =
-            ReservationEntity(
+            TicketEntity(
                 id = id,
                 performanceRoundId = roundId,
                 seatAreaId = seatAreaId,
@@ -61,9 +61,9 @@ internal class ReservationRepositoryImpl(
                 reservationExpireTime = reservationExpireTime,
             )
 
-    private val ReservationEntity.domain: Reservation
+    private val TicketEntity.domain: Ticket
         get() =
-            Reservation(
+            Ticket(
                 id = id,
                 roundId = performanceRoundId,
                 seatAreaId = seatAreaId,

@@ -7,8 +7,8 @@ import com.hunhui.ticketworld.application.dto.response.PerformanceSummaryListRes
 import com.hunhui.ticketworld.application.dto.response.SeatAreasResponse
 import com.hunhui.ticketworld.domain.performance.PerformanceRepository
 import com.hunhui.ticketworld.domain.performance.PerformanceRound
-import com.hunhui.ticketworld.domain.reservation.Reservation
 import com.hunhui.ticketworld.domain.reservation.ReservationRepository
+import com.hunhui.ticketworld.domain.reservation.Ticket
 import com.hunhui.ticketworld.domain.seat.SeatArea
 import com.hunhui.ticketworld.domain.seat.SeatAreaRepository
 import org.springframework.stereotype.Service
@@ -38,11 +38,11 @@ class PerformanceService(
         performanceRepository.save(performance)
         seatAreaRepository.saveAll(seatAreas)
         val performanceRounds: List<PerformanceRound> = performance.rounds
-        val reservations =
+        val tickets =
             seatAreas.flatMap { seatArea ->
                 seatArea.seats.flatMap { seat ->
                     performanceRounds.map { round ->
-                        Reservation(
+                        Ticket(
                             id = UUID.randomUUID(),
                             roundId = round.id,
                             seatAreaId = seatArea.id,
@@ -56,7 +56,7 @@ class PerformanceService(
                     }
                 }
             }
-        reservationRepository.saveAll(reservations)
+        reservationRepository.saveTickets(tickets)
         return PerformanceCreateResponse(performance.id)
     }
 
