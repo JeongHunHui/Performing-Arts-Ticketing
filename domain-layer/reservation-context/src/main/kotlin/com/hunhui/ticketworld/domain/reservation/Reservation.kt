@@ -24,11 +24,11 @@ class Reservation(
             tickets = tickets.map { it.tempReserve(tryReserveUserId) },
         )
 
-    fun confirmReserve(
+    fun reserve(
         paymentId: UUID,
         tryReserveUserId: UUID,
     ) = Reservation(
-        tickets = tickets.map { it.confirmReserve(tryReserveUserId, paymentId) },
+        tickets = tickets.map { it.reserve(tryReserveUserId, paymentId) },
     )
 
     fun getPriceById(priceId: UUID): Money = tickets.first { it.performancePriceId == priceId }.price

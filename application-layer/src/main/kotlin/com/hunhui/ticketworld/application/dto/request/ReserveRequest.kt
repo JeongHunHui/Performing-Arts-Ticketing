@@ -5,7 +5,7 @@ import com.hunhui.ticketworld.domain.payment.PaymentMethod
 import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode
 import java.util.UUID
 
-data class ConfirmReserveRequest(
+data class ReserveRequest(
     val reservationIds: List<UUID>,
     val paymentInfos: List<PaymentInfoRequest>,
     val paymentMethod: PaymentMethod,

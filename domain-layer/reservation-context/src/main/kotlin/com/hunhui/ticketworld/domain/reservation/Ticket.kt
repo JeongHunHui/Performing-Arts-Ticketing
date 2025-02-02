@@ -27,7 +27,7 @@ class Ticket(
     val canTempReserve: Boolean
         get() = isTempReservationExpired && !isPaid
 
-    private fun canConfirmReserve(userId: UUID): Boolean = tempUserId == userId && !isPaid
+    private fun canReserve(userId: UUID): Boolean = tempUserId == userId && !isPaid
 
     fun tempReserve(userId: UUID): Ticket {
         if (!canTempReserve) throw BusinessException(ReservationErrorCode.CANNOT_TEMP_RESERVE)
@@ -44,11 +44,11 @@ class Ticket(
         )
     }
 
-    fun confirmReserve(
+    fun reserve(
         userId: UUID,
         paymentId: UUID,
     ): Ticket {
-        if (!canConfirmReserve(userId)) throw BusinessException(ReservationErrorCode.CANNOT_RESERVE)
+        if (!canReserve(userId)) throw BusinessException(ReservationErrorCode.CANNOT_RESERVE)
         return Ticket(
             id = id,
             roundId = roundId,

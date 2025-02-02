@@ -1,9 +1,9 @@
 package com.hunhui.ticketworld.web.controller.doc
 
-import com.hunhui.ticketworld.application.dto.request.ConfirmReserveRequest
+import com.hunhui.ticketworld.application.dto.request.ReserveRequest
 import com.hunhui.ticketworld.application.dto.request.TempReserveRequest
-import com.hunhui.ticketworld.application.dto.response.ConfirmReserveResponse
 import com.hunhui.ticketworld.application.dto.response.ReservationListResponse
+import com.hunhui.ticketworld.application.dto.response.ReserveResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
@@ -24,8 +24,8 @@ interface ReservationApiDoc {
         @RequestBody tempReserveRequest: TempReserveRequest,
     ): ResponseEntity<Unit>
 
-    @Operation(summary = "예매 확정 API")
-    fun confirmReserve(
-        @RequestBody confirmReserveRequest: ConfirmReserveRequest,
-    ): ResponseEntity<ConfirmReserveResponse>
+    @Operation(summary = "예매 API")
+    fun reserve(
+        @RequestBody reserveRequest: ReserveRequest,
+    ): ResponseEntity<ReserveResponse>
 }

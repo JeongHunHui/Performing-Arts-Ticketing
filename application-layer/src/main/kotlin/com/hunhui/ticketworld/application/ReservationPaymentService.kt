@@ -20,12 +20,15 @@ class ReservationPaymentService(
         if (isPriceCountDifferent) throw BusinessException(ReservationErrorCode.INVALID_RESERVE_REQUEST)
     }
 
-    fun pay(paymentMethod: PaymentMethod): Payment {
+    fun pay(
+        paymentMethod: PaymentMethod,
+        userId: UUID,
+    ): Payment {
         val paymentInfos: List<PaymentInfo> = paymentInfos.map { it.toDomain() }
 
         return Payment(
             id = UUID.randomUUID(),
-            userId = reservation.tryReserveUserId,
+            userId = userId,
             paymentMethod = paymentMethod,
             paymentInfos = paymentInfos,
         )
