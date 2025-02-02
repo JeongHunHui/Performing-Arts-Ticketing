@@ -2,8 +2,8 @@ package com.hunhui.ticketworld.infra.jpa.repository
 
 import com.hunhui.ticketworld.common.error.BusinessException
 import com.hunhui.ticketworld.common.vo.Money
+import com.hunhui.ticketworld.domain.reservation.Reservation
 import com.hunhui.ticketworld.domain.reservation.ReservationRepository
-import com.hunhui.ticketworld.domain.reservation.Reservations
 import com.hunhui.ticketworld.domain.reservation.Ticket
 import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode
 import com.hunhui.ticketworld.infra.jpa.entity.TicketEntity
@@ -18,12 +18,8 @@ internal class ReservationRepositoryImpl(
     override fun getTicketById(id: UUID): Ticket =
         ticketJpaRepository.findByIdOrNull(id)?.domain ?: throw BusinessException(ReservationErrorCode.CANNOT_RESERVE)
 
-    override fun getReservations(
-        ids: List<UUID>,
-        tryReserveUserId: UUID,
-    ): Reservations =
-        Reservations(
-            tryReserveUserId = tryReserveUserId,
+    override fun getByIds(ids: List<UUID>) =
+        Reservation(
             tickets = ticketJpaRepository.findAllById(ids).map { it.domain },
         )
 
@@ -43,8 +39,8 @@ internal class ReservationRepositoryImpl(
         ticketJpaRepository.saveAll(tickets.map { it.entity })
     }
 
-    override fun saveAll(reservations: Reservations) {
-        ticketJpaRepository.saveAll(reservations.tickets.map { it.entity })
+    override fun save(reservation: Reservation) {
+        ticketJpaRepository.saveAll(reservation.tickets.map { it.entity })
     }
 
     private val Ticket.entity: TicketEntity

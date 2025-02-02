@@ -10,8 +10,8 @@ import com.hunhui.ticketworld.domain.discount.DiscountRepository
 import com.hunhui.ticketworld.domain.payment.Payment
 import com.hunhui.ticketworld.domain.payment.PaymentRepository
 import com.hunhui.ticketworld.domain.performance.PerformanceRepository
+import com.hunhui.ticketworld.domain.reservation.Reservation
 import com.hunhui.ticketworld.domain.reservation.ReservationRepository
-import com.hunhui.ticketworld.domain.reservation.Reservations
 import com.hunhui.ticketworld.domain.reservation.Ticket
 import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode
 import com.hunhui.ticketworld.domain.user.UserRepository
@@ -38,38 +38,34 @@ class ReservationService(
     @Transactional
     fun tempReserve(tempReserveRequest: TempReserveRequest) {
         tempReserveRequest.validate()
-        val reservations: Reservations =
-            reservationRepository.getReservations(
-                ids = tempReserveRequest.reservationIds,
-                tryReserveUserId = tempReserveRequest.userId,
-            )
-        reservationRepository.saveAll(reservations.tempReserve())
+        val reservation: Reservation = reservationRepository.getByIds(tempReserveRequest.reservationIds)
+        reservationRepository.save(reservation.tempReserve(tempReserveRequest.userId))
     }
 
     @Transactional
     fun confirmReserve(confirmReserveRequest: ConfirmReserveRequest): ConfirmReserveResponse {
-        val reservations =
-            reservationRepository.getReservations(
-                ids = confirmReserveRequest.reservationIds,
-                tryReserveUserId = confirmReserveRequest.userId,
-            )
+        val reservation: Reservation = reservationRepository.getByIds(confirmReserveRequest.reservationIds)
 
         val discounts: List<Discount> = discountRepository.findAllByIds(confirmReserveRequest.discountIds)
 
         val reservationPaymentService =
             ReservationPaymentService(
                 discounts = discounts,
-                reservations = reservations,
+                reservation = reservation,
                 paymentInfos = confirmReserveRequest.paymentInfos,
             )
         val payment: Payment = reservationPaymentService.pay(confirmReserveRequest.paymentMethod)
 
-        val confirmedReservations: Reservations = reservations.confirmReserve(payment.id)
+        val confirmedReservation: Reservation =
+            reservation.confirmReserve(
+                paymentId = payment.id,
+                tryReserveUserId = confirmReserveRequest.userId,
+            )
 
         paymentRepository.save(payment)
-        reservationRepository.saveAll(confirmedReservations)
+        reservationRepository.save(confirmedReservation)
 
-        return ConfirmReserveResponse(paymentId = payment.id)
+        return ConfirmReserveResponse(payment.id)
     }
 
     private fun TempReserveRequest.validate() {

@@ -5,8 +5,7 @@ import com.hunhui.ticketworld.common.vo.Money
 import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode
 import java.util.UUID
 
-class Reservations(
-    val tryReserveUserId: UUID,
+class Reservation(
     val tickets: List<Ticket>,
 ) {
     init {
@@ -20,17 +19,17 @@ class Reservations(
     val priceIdCountMap: Map<UUID, Int>
         get() = tickets.groupingBy { it.performancePriceId }.eachCount()
 
-    fun tempReserve(): Reservations =
-        Reservations(
-            tryReserveUserId = tryReserveUserId,
+    fun tempReserve(tryReserveUserId: UUID) =
+        Reservation(
             tickets = tickets.map { it.tempReserve(tryReserveUserId) },
         )
 
-    fun confirmReserve(paymentId: UUID): Reservations =
-        Reservations(
-            tryReserveUserId = tryReserveUserId,
-            tickets = tickets.map { it.confirmReserve(tryReserveUserId, paymentId) },
-        )
+    fun confirmReserve(
+        paymentId: UUID,
+        tryReserveUserId: UUID,
+    ) = Reservation(
+        tickets = tickets.map { it.confirmReserve(tryReserveUserId, paymentId) },
+    )
 
     fun getPriceById(priceId: UUID): Money = tickets.first { it.performancePriceId == priceId }.price
 

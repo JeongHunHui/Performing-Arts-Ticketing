@@ -5,10 +5,7 @@ import java.util.UUID
 interface ReservationRepository {
     fun getTicketById(id: UUID): Ticket
 
-    fun getReservations(
-        ids: List<UUID>,
-        tryReserveUserId: UUID,
-    ): Reservations
+    fun getByIds(ids: List<UUID>): Reservation
 
     fun findTicketsByRoundIdAndAreaId(
         performanceRoundId: UUID,
@@ -19,5 +16,5 @@ interface ReservationRepository {
 
     fun saveTickets(tickets: List<Ticket>)
 
-    fun saveAll(reservations: Reservations)
+    fun save(reservation: Reservation)
 }
