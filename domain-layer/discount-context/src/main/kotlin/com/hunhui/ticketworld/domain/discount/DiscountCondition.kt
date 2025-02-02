@@ -21,10 +21,7 @@ sealed class DiscountCondition(
         override fun canApply(
             roundId: UUID,
             priceId: UUID,
-        ): Boolean {
-            val now = LocalDateTime.now()
-            return now.isAfter(startDate) && now.isBefore(endDate)
-        }
+        ): Boolean = LocalDateTime.now() in startDate..endDate
     }
 
     data class RoundIds(

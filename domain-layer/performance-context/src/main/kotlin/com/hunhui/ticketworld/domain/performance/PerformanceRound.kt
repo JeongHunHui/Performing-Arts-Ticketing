@@ -31,8 +31,5 @@ class PerformanceRound(
     }
 
     val isReservationAvailable: Boolean
-        get() =
-            LocalDateTime.now().let {
-                it.isBefore(reservationEndTime) && it.isAfter(reservationStartTime)
-            }
+        get() = LocalDateTime.now() in reservationStartTime..reservationEndTime
 }
