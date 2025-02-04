@@ -5,13 +5,11 @@ import com.hunhui.ticketworld.application.dto.request.PaymentRequestInfo
 import com.hunhui.ticketworld.application.dto.request.StartPaymentRequest
 import com.hunhui.ticketworld.application.dto.response.StartPaymentResponse
 import com.hunhui.ticketworld.common.error.BusinessException
-import com.hunhui.ticketworld.common.vo.Money
 import com.hunhui.ticketworld.domain.discount.Discount
 import com.hunhui.ticketworld.domain.discount.DiscountRepository
 import com.hunhui.ticketworld.domain.payment.Payment
 import com.hunhui.ticketworld.domain.payment.PaymentInfo
 import com.hunhui.ticketworld.domain.payment.PaymentRepository
-import com.hunhui.ticketworld.domain.performance.Performance
 import com.hunhui.ticketworld.domain.performance.PerformanceRepository
 import com.hunhui.ticketworld.domain.reservation.Reservation
 import com.hunhui.ticketworld.domain.reservation.ReservationRepository
@@ -28,46 +26,43 @@ class PaymentService(
     private val paymentRepository: PaymentRepository,
 ) {
     @Transactional
-    fun startPayment(startPaymentRequest: StartPaymentRequest): StartPaymentResponse {
-        // 예매가 만료되었으면 예외 발생
-        val reservation: Reservation = reservationRepository.getById(startPaymentRequest.reservationId)
-        if (reservation.isExpired) throw BusinessException(ReservationErrorCode.EXPIRED)
+    fun startPayment(request: StartPaymentRequest): StartPaymentResponse {
+        val reservation: Reservation = reservationRepository.getById(request.reservationId)
+        // 결제 요청과 예매한 티켓들의 가격과 수량이 일치하는지 확인
+        request.validate(reservation)
 
-        // reservation으로 startPaymentRequest 검증
-        val isPriceCountDifferent: Boolean =
-            reservation.priceIdCountMap != startPaymentRequest.paymentRequestInfos.priceCount
-        if (isPriceCountDifferent) throw BusinessException(ReservationErrorCode.INVALID_RESERVE_REQUEST)
+        val discounts: List<Discount> = discountRepository.findAllByIds(request.getDiscountIds())
+        // 할인의 공연 ID가 예매와 일치하는지 확인
+        discounts.forEach {
+            if (it.performanceId != reservation.performanceId) throw BusinessException(ReservationErrorCode.INVALID_RESERVE_REQUEST)
+        }
 
-        // 할인 목록 조회 및 유효성 검증
-        val discounts: List<Discount> = discountRepository.findAllByIds(startPaymentRequest.getDiscountIds())
-        val isInvalidDiscount: Boolean = discounts.any { it.performanceId != reservation.performanceId }
-        if (isInvalidDiscount) throw BusinessException(ReservationErrorCode.INVALID_RESERVE_REQUEST)
-
-        // 결제 요청 정보들을 통해 할인을 적용한 결제 금액 계산 및 결제 정보 생성
+        // 각 결제 항목 생성: 할인 적용 로직은 Discount.apply() 사용
         val paymentInfos: List<PaymentInfo> =
-            startPaymentRequest.paymentRequestInfos.map {
-                val discount: Discount = discounts.getById(it.discountId)
-                val price: Money = reservation.getPriceById(it.performancePriceId)
+            request.paymentRequestInfos.map { info ->
+                val discount: Discount = discounts.find { it.id == info.discountId } ?: Discount.DEFAULT
+                val price = reservation.getPriceById(info.performancePriceId)
+                val finalAmount =
+                    discount.apply(
+                        roundId = reservation.roundId,
+                        priceId = info.performancePriceId,
+                        price = price,
+                        count = info.reservationCount,
+                    )
                 PaymentInfo(
                     id = UUID.randomUUID(),
-                    performancePriceId = it.performancePriceId,
-                    reservationCount = it.reservationCount,
-                    discountId = it.discountId,
-                    paymentAmount =
-                        discount.apply(
-                            roundId = reservation.roundId,
-                            priceId = it.performancePriceId,
-                            price = price,
-                            count = it.reservationCount,
-                        ),
+                    performancePriceId = info.performancePriceId,
+                    reservationCount = info.reservationCount,
+                    discountId = info.discountId,
+                    paymentAmount = finalAmount,
                 )
             }
 
-        // 결제 생성 및 저장
-        val payment =
+        // 결제 생성
+        val payment: Payment =
             Payment.create(
-                userId = startPaymentRequest.userId,
-                paymentMethod = startPaymentRequest.paymentMethod,
+                userId = request.userId,
+                paymentMethod = request.paymentMethod,
                 paymentInfos = paymentInfos,
             )
         paymentRepository.save(payment)
@@ -75,29 +70,29 @@ class PaymentService(
     }
 
     @Transactional
-    fun completePayment(completePaymentRequest: CompletePaymentRequest) {
-        // TODO: 토스 결제 서버에 데이터 검증 요청
+    fun completePayment(request: CompletePaymentRequest) {
+        // TODO: 외부 결제 서버에 데이터 검증 요청
 
-        // 예매 조회
-        val reservation: Reservation = reservationRepository.getById(completePaymentRequest.reservationId)
+        // 예매가 만료되지 않았는지 확인
+        val reservation: Reservation = reservationRepository.getById(request.reservationId)
+        if (reservation.isExpired) throw BusinessException(ReservationErrorCode.EXPIRED)
 
-        // 예매 가능한 회차인지 확인
-        val performance: Performance = performanceRepository.getById(reservation.performanceId)
-        val isNotAvailableRound: Boolean = !performance.isAvailableRoundId(reservation.roundId)
-        if (isNotAvailableRound) throw BusinessException(ReservationErrorCode.ROUND_NOT_AVAILABLE)
+        // 예매 기간이 지난 회차가 아닌지 확인
+        val performance = performanceRepository.getById(reservation.performanceId)
+        if (!performance.isAvailableRoundId(reservation.roundId)) throw BusinessException(ReservationErrorCode.ROUND_NOT_AVAILABLE)
 
-        // 예매 확정 및 업데이트
-        val confirmedReservation: Reservation =
-            reservation.confirm(
-                userId = completePaymentRequest.userId,
-                paymentId = completePaymentRequest.paymentId,
-            )
+        // 예매 확정 처리
+        val confirmedReservation = reservation.confirm(request.userId, request.paymentId)
         reservationRepository.save(confirmedReservation)
 
-        // 결제 완료 및 업데이트
-        val payment: Payment = paymentRepository.getById(completePaymentRequest.paymentId)
-        val completedPayment: Payment = payment.complete()
+        // 결제 완료 처리
+        val completedPayment = paymentRepository.getById(request.paymentId).complete()
         paymentRepository.save(completedPayment)
+    }
+
+    private fun StartPaymentRequest.validate(reservation: Reservation) {
+        val isPriceCountDifferent: Boolean = reservation.priceIdCountMap != paymentRequestInfos.priceCount
+        if (isPriceCountDifferent) throw BusinessException(ReservationErrorCode.INVALID_RESERVE_REQUEST)
     }
 
     private val List<PaymentRequestInfo>.priceCount: Map<UUID, Int>
@@ -105,6 +100,4 @@ class PaymentService(
             groupBy { it.performancePriceId }.mapValues {
                 it.value.sumOf { paymentInfo -> paymentInfo.reservationCount }
             }
-
-    private fun List<Discount>.getById(discountId: UUID?): Discount = find { it.id == discountId } ?: Discount.DEFAULT
 }

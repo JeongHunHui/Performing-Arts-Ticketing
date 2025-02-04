@@ -11,8 +11,8 @@ class Reservation(
     val performanceId: UUID,
     val userId: UUID,
     val paymentId: UUID?,
-    val tickets: List<Ticket>,
     val date: LocalDateTime?,
+    val tickets: List<Ticket>,
 ) {
     init {
         if (tickets.isEmpty()) throw BusinessException(ReservationErrorCode.INVALID_RESERVATION)
@@ -20,7 +20,7 @@ class Reservation(
     }
 
     companion object {
-        fun createTempReservation(
+        fun create(
             tickets: List<Ticket>,
             userId: UUID,
             performanceId: UUID,
