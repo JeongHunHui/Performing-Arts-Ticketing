@@ -44,7 +44,7 @@ internal class ReservationRepositoryImpl(
                 userId = userId,
                 paymentId = paymentId,
                 tickets = tickets.map { it.domain },
-                reservedAt = reservedAt,
+                date = reservedAt,
             )
         }
 
@@ -53,9 +53,9 @@ internal class ReservationRepositoryImpl(
             Ticket(
                 id = id,
                 roundId = performanceRoundId,
-                seatAreaId = seatAreaId,
+                areaId = seatAreaId,
                 seatId = seatId,
-                performancePriceId = performancePriceId,
+                priceId = performancePriceId,
                 reservationId = reservationId,
                 price = Money(price),
                 isPaid = isPaid,
@@ -70,7 +70,7 @@ internal class ReservationRepositoryImpl(
                 userId = userId,
                 paymentId = paymentId,
                 tickets = tickets.map { it.entity },
-                reservedAt = reservedAt,
+                reservedAt = date,
             )
 
     private val Ticket.entity: TicketEntity
@@ -78,9 +78,9 @@ internal class ReservationRepositoryImpl(
             TicketEntity(
                 id = id,
                 performanceRoundId = roundId,
-                seatAreaId = seatAreaId,
+                seatAreaId = areaId,
                 seatId = seatId,
-                performancePriceId = performancePriceId,
+                performancePriceId = priceId,
                 reservationId = reservationId,
                 price = price.amount,
                 isPaid = isPaid,

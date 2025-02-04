@@ -14,5 +14,5 @@ class UserController(
     private val userService: UserService,
 ) : UserApiDoc {
     @PostMapping
-    override fun createUser(): ResponseEntity<UserCreateResponse> = ResponseEntity.ok(userService.createUser())
+    override fun createUser(): ResponseEntity<UserCreateResponse> = ResponseEntity.ok(userService.create())
 }

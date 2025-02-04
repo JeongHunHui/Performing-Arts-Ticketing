@@ -12,7 +12,7 @@ class Reservation(
     val userId: UUID,
     val paymentId: UUID?,
     val tickets: List<Ticket>,
-    val reservedAt: LocalDateTime?,
+    val date: LocalDateTime?,
 ) {
     init {
         if (tickets.isEmpty()) throw BusinessException(ReservationErrorCode.INVALID_RESERVATION)
@@ -32,7 +32,7 @@ class Reservation(
                 userId = userId,
                 paymentId = null,
                 tickets = tickets.map { it.tempReserve(id) },
-                reservedAt = null,
+                date = null,
             )
         }
     }
@@ -41,7 +41,7 @@ class Reservation(
         get() = tickets.first().roundId
 
     val priceIdCountMap: Map<UUID, Int>
-        get() = tickets.groupingBy { it.performancePriceId }.eachCount()
+        get() = tickets.groupingBy { it.priceId }.eachCount()
 
     val isExpired: Boolean
         get() = tickets.any { it.isExpired }
@@ -56,10 +56,10 @@ class Reservation(
             tickets = tickets.map { it.confirmReserve() },
             userId = userId,
             paymentId = paymentId,
-            reservedAt = LocalDateTime.now(),
+            date = LocalDateTime.now(),
         )
 
-    fun getPriceById(priceId: UUID): Money = tickets.first { it.performancePriceId == priceId }.price
+    fun getPriceById(priceId: UUID): Money = tickets.first { it.priceId == priceId }.price
 
     /** 선택된 예매들의 roundId가 통일되지 않았다면 True */
     private val roundIdNotUnified: Boolean

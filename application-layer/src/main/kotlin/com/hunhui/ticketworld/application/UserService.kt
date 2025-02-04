@@ -10,7 +10,7 @@ import java.util.UUID
 class UserService(
     private val userRepository: UserRepository,
 ) {
-    fun createUser(): UserCreateResponse {
+    fun create(): UserCreateResponse {
         val user = User(UUID.randomUUID())
         userRepository.save(user)
         return UserCreateResponse(user.id)

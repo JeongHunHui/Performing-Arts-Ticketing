@@ -43,9 +43,9 @@ class PerformanceService(
                     performanceRounds.map { round ->
                         Ticket.create(
                             roundId = round.id,
-                            seatAreaId = seatArea.id,
+                            areaId = seatArea.id,
                             seatId = seat.id,
-                            performancePriceId = seat.performancePriceId,
+                            priceId = seat.performancePriceId,
                             price = performance.getPriceById(seat.performancePriceId),
                         )
                     }

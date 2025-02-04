@@ -10,9 +10,9 @@ import java.util.UUID
 class Ticket(
     val id: UUID,
     val roundId: UUID,
-    val seatAreaId: UUID,
+    val areaId: UUID,
     val seatId: UUID,
-    val performancePriceId: UUID,
+    val priceId: UUID,
     val reservationId: UUID?,
     val price: Money,
     val isPaid: Boolean,
@@ -21,17 +21,17 @@ class Ticket(
     companion object {
         fun create(
             roundId: UUID,
-            seatAreaId: UUID,
+            areaId: UUID,
             seatId: UUID,
-            performancePriceId: UUID,
+            priceId: UUID,
             price: Money,
         ): Ticket =
             Ticket(
                 id = UUID.randomUUID(),
                 roundId = roundId,
-                seatAreaId = seatAreaId,
+                areaId = areaId,
                 seatId = seatId,
-                performancePriceId = performancePriceId,
+                priceId = priceId,
                 reservationId = null,
                 price = price,
                 isPaid = false,
@@ -44,20 +44,21 @@ class Ticket(
     }
 
     /** 만료시간이 없거나 이미 지났으면 true */
-    val isExpired: Boolean
+    internal val isExpired: Boolean
         get() = expireTime.isBefore(LocalDateTime.now())
 
+    /** 결제되지 않은 티켓이고 만료되었으면 true */
     val canTempReserve: Boolean
         get() = !isPaid && isExpired
 
-    fun tempReserve(reservationId: UUID): Ticket {
+    internal fun tempReserve(reservationId: UUID): Ticket {
         if (!canTempReserve) throw BusinessException(CANNOT_TEMP_RESERVE)
         return Ticket(
             id = id,
             roundId = roundId,
-            seatAreaId = seatAreaId,
+            areaId = areaId,
             seatId = seatId,
-            performancePriceId = performancePriceId,
+            priceId = priceId,
             reservationId = reservationId,
             price = price,
             isPaid = false,
@@ -65,14 +66,14 @@ class Ticket(
         )
     }
 
-    fun confirmReserve(): Ticket {
-        if (!canConfirm) throw BusinessException(CANNOT_CONFIRM_RESERVE)
+    internal fun confirmReserve(): Ticket {
+        if (!canConfirmReserve) throw BusinessException(CANNOT_CONFIRM_RESERVE)
         return Ticket(
             id = id,
             roundId = roundId,
-            seatAreaId = seatAreaId,
+            areaId = areaId,
             seatId = seatId,
-            performancePriceId = performancePriceId,
+            priceId = priceId,
             reservationId = reservationId,
             price = price,
             isPaid = true,
@@ -80,6 +81,6 @@ class Ticket(
         )
     }
 
-    private val canConfirm: Boolean
+    private val canConfirmReserve: Boolean
         get() = !isPaid && !isExpired
 }
