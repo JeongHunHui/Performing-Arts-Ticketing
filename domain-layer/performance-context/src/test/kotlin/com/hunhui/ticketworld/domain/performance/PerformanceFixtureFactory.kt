@@ -9,7 +9,7 @@ object PerformanceFixtureFactory {
         imageUrl: String = "test_image.png",
         location: String = "테스트 장소",
         description: String = "테스트 공연 설명",
-        reservationCount: Int = 5,
+        maxReservationCount: Int = 5,
         performancePrices: List<PerformancePrice> = listOf(createValidPerformancePrice(), createValidPerformancePrice("R석", 80000)),
         rounds: List<PerformanceRound> =
             listOf(
@@ -27,7 +27,7 @@ object PerformanceFixtureFactory {
             imageUrl = imageUrl,
             location = location,
             description = description,
-            reservationCount = reservationCount,
+            maxReservationCount = maxReservationCount,
             performancePrices = performancePrices,
             rounds = rounds,
         )

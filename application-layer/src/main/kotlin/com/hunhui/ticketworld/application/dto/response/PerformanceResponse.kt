@@ -34,6 +34,7 @@ data class PerformanceResponse(
                 performancePrices =
                     performance.performancePrices.map {
                         PerformancePriceResponse(
+                            priceId = it.id,
                             priceName = it.priceName,
                             price = it.price.amount,
                         )
@@ -49,6 +50,7 @@ data class PerformanceResponse(
     }
 
     data class PerformancePriceResponse(
+        val priceId: UUID,
         val priceName: String,
         val price: Long,
     )

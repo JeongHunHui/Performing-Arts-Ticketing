@@ -1,10 +1,9 @@
 package com.hunhui.ticketworld.web.controller
 
 import com.hunhui.ticketworld.application.ReservationService
-import com.hunhui.ticketworld.application.dto.request.ReserveRequest
 import com.hunhui.ticketworld.application.dto.request.TempReserveRequest
-import com.hunhui.ticketworld.application.dto.response.ReservationListResponse
-import com.hunhui.ticketworld.application.dto.response.ReserveResponse
+import com.hunhui.ticketworld.application.dto.response.TempReserveResponse
+import com.hunhui.ticketworld.application.dto.response.TicketListResponse
 import com.hunhui.ticketworld.web.controller.doc.ReservationApiDoc
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -21,18 +20,13 @@ class ReservationController(
     private val reservationService: ReservationService,
 ) : ReservationApiDoc {
     @GetMapping
-    override fun findAllReservations(
+    override fun findAllTickets(
         @RequestParam roundId: UUID,
         @RequestParam areaId: UUID,
-    ): ResponseEntity<ReservationListResponse> = ResponseEntity.ok(reservationService.findAll(roundId, areaId))
+    ): ResponseEntity<TicketListResponse> = ResponseEntity.ok(reservationService.findAll(roundId, areaId))
 
-    @PatchMapping("/temp-reserve")
-    override fun tempReserve(
+    @PatchMapping("/temp")
+    override fun tempReservation(
         @RequestBody tempReserveRequest: TempReserveRequest,
-    ): ResponseEntity<Unit> = ResponseEntity.ok(reservationService.tempReserve(tempReserveRequest))
-
-    @PatchMapping("/reserve")
-    override fun reserve(
-        @RequestBody reserveRequest: ReserveRequest,
-    ): ResponseEntity<ReserveResponse> = ResponseEntity.ok(reservationService.reserve(reserveRequest))
+    ): ResponseEntity<TempReserveResponse> = ResponseEntity.ok(reservationService.tempReserve(tempReserveRequest))
 }

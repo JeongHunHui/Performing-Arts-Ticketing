@@ -13,7 +13,6 @@ import com.hunhui.ticketworld.domain.seat.SeatArea
 import com.hunhui.ticketworld.domain.seat.SeatAreaRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDateTime
 import java.util.UUID
 
 @Service
@@ -42,21 +41,17 @@ class PerformanceService(
             seatAreas.flatMap { seatArea ->
                 seatArea.seats.flatMap { seat ->
                     performanceRounds.map { round ->
-                        Ticket(
-                            id = UUID.randomUUID(),
+                        Ticket.create(
                             roundId = round.id,
                             seatAreaId = seatArea.id,
                             seatId = seat.id,
                             performancePriceId = seat.performancePriceId,
                             price = performance.getPriceById(seat.performancePriceId),
-                            tempUserId = null,
-                            paymentId = null,
-                            reservationExpireTime = LocalDateTime.now(),
                         )
                     }
                 }
             }
-        reservationRepository.saveTickets(tickets)
+        reservationRepository.saveNewTickets(tickets)
         return PerformanceCreateResponse(performance.id)
     }
 

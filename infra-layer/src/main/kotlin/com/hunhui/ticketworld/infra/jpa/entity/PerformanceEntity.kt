@@ -29,8 +29,8 @@ internal class PerformanceEntity(
     val location: String,
     @Column(name = "description", nullable = false)
     val description: String,
-    @Column(name = "reservationCount", nullable = false)
-    val reservationCount: Int,
+    @Column(name = "maxReservationCount", nullable = false)
+    val maxReservationCount: Int,
     @OneToMany(
         mappedBy = "performanceId",
         cascade = [CascadeType.ALL],

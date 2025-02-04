@@ -3,15 +3,15 @@ package com.hunhui.ticketworld.application.dto.response
 import com.hunhui.ticketworld.domain.reservation.Ticket
 import java.util.UUID
 
-data class ReservationListResponse(
-    val reservations: List<ReservationResponse>,
+data class TicketListResponse(
+    val tickets: List<TicketResponse>,
 ) {
     companion object {
-        fun from(ticketList: List<Ticket>): ReservationListResponse =
-            ReservationListResponse(
-                reservations =
+        fun from(ticketList: List<Ticket>): TicketListResponse =
+            TicketListResponse(
+                tickets =
                     ticketList.map {
-                        ReservationResponse(
+                        TicketResponse(
                             id = it.id,
                             seatId = it.seatId,
                             canReserve = it.canTempReserve,
@@ -20,7 +20,7 @@ data class ReservationListResponse(
             )
     }
 
-    data class ReservationResponse(
+    data class TicketResponse(
         val id: UUID,
         val seatId: UUID,
         val canReserve: Boolean,

@@ -16,7 +16,7 @@ class Performance(
     val imageUrl: String,
     val location: String,
     val description: String,
-    val reservationCount: Int,
+    val maxReservationCount: Int,
     val performancePrices: List<PerformancePrice>,
     val rounds: List<PerformanceRound>,
 ) {
@@ -32,7 +32,7 @@ class Performance(
             imageUrl: String,
             location: String,
             description: String,
-            reservationCount: Int,
+            maxReservationCount: Int,
             performancePrices: List<PerformancePrice>,
             rounds: List<PerformanceRound>,
         ): Performance =
@@ -43,7 +43,7 @@ class Performance(
                 imageUrl = imageUrl,
                 location = location,
                 description = description,
-                reservationCount = reservationCount,
+                maxReservationCount = maxReservationCount,
                 performancePrices = performancePrices,
                 rounds = rounds,
             )
@@ -61,4 +61,6 @@ class Performance(
         get() = performancePrices.minOf { it.price }
 
     fun getPriceById(priceId: UUID): Money = performancePrices.find { it.id == priceId }?.price ?: throw BusinessException(INVALID_PRICE_ID)
+
+    fun isAvailableRoundId(roundId: UUID): Boolean = availableRounds.any { it.id == roundId }
 }

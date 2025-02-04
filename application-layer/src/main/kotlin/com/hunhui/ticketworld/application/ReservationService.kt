@@ -1,20 +1,15 @@
 package com.hunhui.ticketworld.application
 
-import com.hunhui.ticketworld.application.dto.request.ReserveRequest
 import com.hunhui.ticketworld.application.dto.request.TempReserveRequest
-import com.hunhui.ticketworld.application.dto.response.ReservationListResponse
-import com.hunhui.ticketworld.application.dto.response.ReserveResponse
+import com.hunhui.ticketworld.application.dto.response.TempReserveResponse
+import com.hunhui.ticketworld.application.dto.response.TicketListResponse
 import com.hunhui.ticketworld.common.error.BusinessException
-import com.hunhui.ticketworld.domain.discount.Discount
-import com.hunhui.ticketworld.domain.discount.DiscountRepository
-import com.hunhui.ticketworld.domain.payment.Payment
-import com.hunhui.ticketworld.domain.payment.PaymentRepository
+import com.hunhui.ticketworld.domain.performance.Performance
 import com.hunhui.ticketworld.domain.performance.PerformanceRepository
 import com.hunhui.ticketworld.domain.reservation.Reservation
 import com.hunhui.ticketworld.domain.reservation.ReservationRepository
 import com.hunhui.ticketworld.domain.reservation.Ticket
 import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode
-import com.hunhui.ticketworld.domain.user.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -23,58 +18,41 @@ import java.util.UUID
 class ReservationService(
     private val performanceRepository: PerformanceRepository,
     private val reservationRepository: ReservationRepository,
-    private val userRepository: UserRepository,
-    private val discountRepository: DiscountRepository,
-    private val paymentRepository: PaymentRepository,
 ) {
     fun findAll(
         roundId: UUID,
         areaId: UUID,
-    ): ReservationListResponse {
+    ): TicketListResponse {
         val ticketList: List<Ticket> = reservationRepository.findTicketsByRoundIdAndAreaId(roundId, areaId)
-        return ReservationListResponse.from(ticketList)
+        return TicketListResponse.from(ticketList)
     }
 
     @Transactional
-    fun tempReserve(tempReserveRequest: TempReserveRequest) {
-        tempReserveRequest.validate()
-        val reservation: Reservation = reservationRepository.getByIds(tempReserveRequest.reservationIds)
-        reservationRepository.save(reservation.tempReserve(tempReserveRequest.userId))
-    }
+    fun tempReserve(tempReserveRequest: TempReserveRequest): TempReserveResponse {
+        val performance: Performance = performanceRepository.getById(tempReserveRequest.performanceId)
 
-    @Transactional
-    fun reserve(reserveRequest: ReserveRequest): ReserveResponse {
-        val reservation: Reservation = reservationRepository.getByIds(reserveRequest.reservationIds)
+        // 예매 가능 수량 확인
+        // TODO: 회차 id와 유저 id를 이용하여 현재 예매 수량을 조회하도록 수정
+        val currentReservationCount = 0
+        val isReservationCountExceed: Boolean =
+            performance.maxReservationCount < tempReserveRequest.ticketIds.size + currentReservationCount
+        if (isReservationCountExceed) throw BusinessException(ReservationErrorCode.RESERVATION_COUNT_EXCEED)
 
-        val discounts: List<Discount> = discountRepository.findAllByIds(reserveRequest.discountIds)
-
-        val reservationPaymentService =
-            ReservationPaymentService(
-                discounts = discounts,
-                reservation = reservation,
-                paymentInfos = reserveRequest.paymentInfos,
-            )
-        val payment: Payment =
-            reservationPaymentService.pay(
-                paymentMethod = reserveRequest.paymentMethod,
-                userId = reserveRequest.userId,
+        // 예매할 티켓들과 유저 id로 임시 예매 생성
+        val tickets: List<Ticket> = reservationRepository.getTicketsByIds(tempReserveRequest.ticketIds)
+        val reservation =
+            Reservation.createTempReservation(
+                tickets = tickets,
+                userId = tempReserveRequest.userId,
+                performanceId = tempReserveRequest.performanceId,
             )
 
-        val updatedReservation: Reservation =
-            reservation.reserve(
-                paymentId = payment.id,
-                tryReserveUserId = reserveRequest.userId,
-            )
+        // 예매 가능한 회차인지 확인
+        val isNotAvailableRound: Boolean = !performance.isAvailableRoundId(reservation.roundId)
+        if (isNotAvailableRound) throw BusinessException(ReservationErrorCode.ROUND_NOT_AVAILABLE)
 
-        paymentRepository.save(payment)
-        reservationRepository.save(updatedReservation)
+        reservationRepository.save(reservation)
 
-        return ReserveResponse(payment.id)
-    }
-
-    private fun TempReserveRequest.validate() {
-        userRepository.getById(userId)
-        val reservationCount = performanceRepository.getById(performanceId).reservationCount
-        if (reservationCount < reservationIds.size) throw BusinessException(ReservationErrorCode.RESERVATION_COUNT_EXCEED)
+        return TempReserveResponse(reservationId = reservation.id)
     }
 }

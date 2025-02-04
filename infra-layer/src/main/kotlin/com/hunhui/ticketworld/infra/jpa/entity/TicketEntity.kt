@@ -21,12 +21,12 @@ internal class TicketEntity(
     val seatId: UUID,
     @Column(name = "performancePriceId", nullable = false)
     val performancePriceId: UUID,
+    @Column(name = "reservationId", nullable = true)
+    val reservationId: UUID? = null,
     @Column(name = "price", nullable = false)
     val price: Long,
-    @Column(name = "userId", nullable = true)
-    val userId: UUID?,
-    @Column(name = "paymentId", nullable = true)
-    val paymentId: UUID?,
-    @Column(name = "reservationExpireTime", nullable = true)
-    val reservationExpireTime: LocalDateTime,
+    @Column(name = "isPaid", nullable = true)
+    val isPaid: Boolean,
+    @Column(name = "expireTime", nullable = false)
+    val expireTime: LocalDateTime,
 ) : BaseTimeEntity()

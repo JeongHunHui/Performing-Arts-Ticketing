@@ -3,18 +3,16 @@ package com.hunhui.ticketworld.domain.reservation
 import java.util.UUID
 
 interface ReservationRepository {
-    fun getTicketById(id: UUID): Ticket
+    fun getById(id: UUID): Reservation
 
-    fun getByIds(ids: List<UUID>): Reservation
+    fun getTicketsByIds(ids: List<UUID>): List<Ticket>
 
     fun findTicketsByRoundIdAndAreaId(
         performanceRoundId: UUID,
         seatAreaId: UUID,
     ): List<Ticket>
 
-    fun saveTicket(ticket: Ticket)
-
-    fun saveTickets(tickets: List<Ticket>)
-
     fun save(reservation: Reservation)
+
+    fun saveNewTickets(tickets: List<Ticket>)
 }

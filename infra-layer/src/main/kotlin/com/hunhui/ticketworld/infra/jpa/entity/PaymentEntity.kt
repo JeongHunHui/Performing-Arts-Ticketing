@@ -1,6 +1,7 @@
 package com.hunhui.ticketworld.infra.jpa.entity
 
 import com.hunhui.ticketworld.domain.payment.PaymentMethod
+import com.hunhui.ticketworld.domain.payment.PaymentStatus
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -20,6 +21,9 @@ internal class PaymentEntity(
     val id: UUID,
     @Column(name = "user_id", nullable = false)
     val userId: UUID,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status", nullable = false)
+    val paymentStatus: PaymentStatus,
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", nullable = false)
     val paymentMethod: PaymentMethod,
