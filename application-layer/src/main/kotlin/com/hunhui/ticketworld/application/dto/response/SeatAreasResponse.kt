@@ -21,7 +21,7 @@ data class SeatAreasResponse(
                                 SeatPositionResponse(
                                     id = seat.id,
                                     seatGradeId = seat.seatGradeId,
-                                    name = seat.name,
+                                    name = seat.number,
                                     x = seat.x,
                                     y = seat.y,
                                 )

@@ -7,7 +7,7 @@ import java.util.UUID
 class SeatPosition(
     val id: UUID,
     val seatGradeId: UUID,
-    val name: String,
+    val number: String,
     val x: Int,
     val y: Int,
 ) {

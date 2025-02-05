@@ -67,13 +67,13 @@ data class PerformanceCreateRequest(
                 width = it.width,
                 height = it.height,
                 positions =
-                    it.positions.map { seat ->
+                    it.positions.map { seatPosition ->
                         SeatPosition(
                             id = UUID.randomUUID(),
-                            seatGradeId = seatGrades[seat.seatGradeIndex].id,
-                            name = seat.name,
-                            x = seat.x,
-                            y = seat.y,
+                            seatGradeId = seatGrades[seatPosition.seatGradeIndex].id,
+                            number = seatPosition.number,
+                            x = seatPosition.x,
+                            y = seatPosition.y,
                         )
                     },
             )
@@ -100,7 +100,7 @@ data class PerformanceCreateRequest(
 
     data class SeatPositionRequest(
         val seatGradeIndex: Int,
-        val name: String,
+        val number: String,
         val x: Int,
         val y: Int,
     )

@@ -16,8 +16,8 @@ internal class SeatPositionEntity(
     val seatAreaId: UUID,
     @Column(name = "seatGradeId", nullable = false)
     val seatGradeId: UUID,
-    @Column(name = "name", nullable = false)
-    val name: String,
+    @Column(name = "number", nullable = false)
+    val number: String,
     @Column(name = "x", nullable = false)
     val x: Int,
     @Column(name = "y", nullable = false)

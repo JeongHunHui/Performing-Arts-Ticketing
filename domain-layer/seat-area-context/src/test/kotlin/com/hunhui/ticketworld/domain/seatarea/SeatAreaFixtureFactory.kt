@@ -13,7 +13,7 @@ object SeatAreaFixtureFactory {
         SeatPosition(
             id = id,
             seatGradeId = seatGradeId,
-            name = seatPositionName,
+            number = seatPositionName,
             x = x,
             y = y,
         )

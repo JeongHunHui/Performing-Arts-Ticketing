@@ -35,7 +35,7 @@ internal class SeatAreaRepositoryImpl(
                         SeatPosition(
                             id = it.id,
                             seatGradeId = it.seatGradeId,
-                            name = it.name,
+                            number = it.number,
                             x = it.x,
                             y = it.y,
                         )
@@ -57,7 +57,7 @@ internal class SeatAreaRepositoryImpl(
                             id = it.id,
                             seatAreaId = id,
                             seatGradeId = it.seatGradeId,
-                            name = it.name,
+                            number = it.number,
                             x = it.x,
                             y = it.y,
                         )

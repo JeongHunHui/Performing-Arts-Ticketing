@@ -14,7 +14,7 @@ class SeatPositionTest {
 
         // then
         assertNotNull(seat)
-        assertEquals("A1", seat.name)
+        assertEquals("A1", seat.number)
     }
 
     @Test
