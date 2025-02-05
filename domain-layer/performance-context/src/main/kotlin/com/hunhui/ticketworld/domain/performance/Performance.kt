@@ -1,9 +1,6 @@
 package com.hunhui.ticketworld.domain.performance
 
 import com.hunhui.ticketworld.common.error.BusinessException
-import com.hunhui.ticketworld.common.vo.Money
-import com.hunhui.ticketworld.domain.performance.exception.PerformanceErrorCode.INVALID_PRICE_ID
-import com.hunhui.ticketworld.domain.performance.exception.PerformanceErrorCode.PERFORMANCE_PRICE_IS_EMPTY
 import com.hunhui.ticketworld.domain.performance.exception.PerformanceErrorCode.ROUND_IS_EMPTY
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -17,11 +14,9 @@ class Performance(
     val location: String,
     val description: String,
     val maxReservationCount: Int,
-    val performancePrices: List<PerformancePrice>,
     val rounds: List<PerformanceRound>,
 ) {
     init {
-        if (performancePrices.isEmpty()) throw BusinessException(PERFORMANCE_PRICE_IS_EMPTY)
         if (rounds.isEmpty()) throw BusinessException(ROUND_IS_EMPTY)
     }
 
@@ -33,7 +28,6 @@ class Performance(
             location: String,
             description: String,
             maxReservationCount: Int,
-            performancePrices: List<PerformancePrice>,
             rounds: List<PerformanceRound>,
         ): Performance =
             Performance(
@@ -44,7 +38,6 @@ class Performance(
                 location = location,
                 description = description,
                 maxReservationCount = maxReservationCount,
-                performancePrices = performancePrices,
                 rounds = rounds,
             )
     }
@@ -57,10 +50,6 @@ class Performance(
         get() = rounds.filter { it.isReservationAvailable }
     val minimumReservationStartTime: LocalDateTime
         get() = rounds.minOf { it.reservationStartTime }
-    val minimumPrice: Money
-        get() = performancePrices.minOf { it.price }
-
-    fun getPriceById(priceId: UUID): Money = performancePrices.find { it.id == priceId }?.price ?: throw BusinessException(INVALID_PRICE_ID)
 
     fun isAvailableRoundId(roundId: UUID): Boolean = availableRounds.any { it.id == roundId }
 }

@@ -68,7 +68,7 @@ class PerformanceRoundTest {
     }
 
     @Test
-    fun `isReservationAvailable- 현재 시간이 예약 기간 범위 내라면 true를 반환한다`() {
+    fun `isReservationAvailable- 현재 시간이 예매 기간 범위 내라면 true를 반환한다`() {
         // given
         val now = LocalDateTime.now()
         val round =
@@ -86,7 +86,7 @@ class PerformanceRoundTest {
     }
 
     @Test
-    fun `isReservationAvailable- 현재 시간이 예약 종료 시간을 지났다면 false를 반환한다`() {
+    fun `isReservationAvailable- 현재 시간이 예매 종료 시간을 지났다면 false를 반환한다`() {
         // given
         val now = LocalDateTime.now()
         val round =
@@ -105,13 +105,13 @@ class PerformanceRoundTest {
     }
 
     @Test
-    fun `isReservationAvailable- 현재 시간이 예약 시작 시간 이전이라면 false를 반환한다`() {
+    fun `isReservationAvailable- 현재 시간이 예매 시작 시간 이전이라면 false를 반환한다`() {
         // given
         val now = LocalDateTime.now()
         val round =
             PerformanceRound.create(
                 roundStartTime = now.plusDays(2),
-                // 아직 예약 시작시간이 아님
+                // 아직 예메 시작시간이 아님
                 reservationStartTime = now.plusHours(1),
                 reservationEndTime = now.plusDays(1),
             )

@@ -1,19 +1,20 @@
 package com.hunhui.ticketworld.application
 
-import com.hunhui.ticketworld.application.dto.request.CompletePaymentRequest
-import com.hunhui.ticketworld.application.dto.request.PaymentRequestInfo
-import com.hunhui.ticketworld.application.dto.request.StartPaymentRequest
-import com.hunhui.ticketworld.application.dto.response.StartPaymentResponse
+import com.hunhui.ticketworld.application.dto.request.PaymentCompleteRequest
+import com.hunhui.ticketworld.application.dto.request.PaymentStartRequest
+import com.hunhui.ticketworld.application.dto.response.PaymentStartResponse
 import com.hunhui.ticketworld.common.error.BusinessException
-import com.hunhui.ticketworld.domain.discount.Discount
-import com.hunhui.ticketworld.domain.discount.DiscountRepository
+import com.hunhui.ticketworld.common.vo.Money
 import com.hunhui.ticketworld.domain.payment.Payment
-import com.hunhui.ticketworld.domain.payment.PaymentInfo
+import com.hunhui.ticketworld.domain.payment.PaymentItem
 import com.hunhui.ticketworld.domain.payment.PaymentRepository
 import com.hunhui.ticketworld.domain.performance.PerformanceRepository
+import com.hunhui.ticketworld.domain.performance.exception.PerformanceErrorCode.ROUND_NOT_AVAILABLE
 import com.hunhui.ticketworld.domain.reservation.Reservation
 import com.hunhui.ticketworld.domain.reservation.ReservationRepository
-import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode
+import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode.EXPIRED
+import com.hunhui.ticketworld.domain.seatgrade.SeatGrade
+import com.hunhui.ticketworld.domain.seatgrade.SeatGradeRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -22,39 +23,28 @@ import java.util.UUID
 class PaymentService(
     private val performanceRepository: PerformanceRepository,
     private val reservationRepository: ReservationRepository,
-    private val discountRepository: DiscountRepository,
+    private val seatGradeRepository: SeatGradeRepository,
     private val paymentRepository: PaymentRepository,
 ) {
     @Transactional
-    fun startPayment(request: StartPaymentRequest): StartPaymentResponse {
+    fun startPayment(request: PaymentStartRequest): PaymentStartResponse {
         val reservation: Reservation = reservationRepository.getById(request.reservationId)
-        // 결제 요청과 예매한 티켓들의 가격과 수량이 일치하는지 확인
-        request.validate(reservation)
+        // 결제 요청의 좌석 등급과 수량이 예매와 일치하는지 확인
+        request.checkSeatGradeCountByReservation(reservation)
 
-        val discounts: List<Discount> = discountRepository.findAllByIds(request.getDiscountIds())
-        // 할인의 공연 ID가 예매와 일치하는지 확인
-        discounts.forEach {
-            if (it.performanceId != reservation.performanceId) throw BusinessException(ReservationErrorCode.INVALID_RESERVE_REQUEST)
-        }
+        val seatGrades: List<SeatGrade> = seatGradeRepository.findAllByPerformanceId(reservation.performanceId)
 
         // 각 결제 항목 생성: 할인 적용 로직은 Discount.apply() 사용
-        val paymentInfos: List<PaymentInfo> =
-            request.paymentRequestInfos.map { info ->
-                val discount: Discount = discounts.find { it.id == info.discountId } ?: Discount.DEFAULT
-                val price = reservation.getPriceById(info.performancePriceId)
-                val finalAmount =
-                    discount.apply(
-                        roundId = reservation.roundId,
-                        priceId = info.performancePriceId,
-                        price = price,
-                        count = info.reservationCount,
-                    )
-                PaymentInfo(
+        val paymentItems: List<PaymentItem> =
+            request.paymentItems.map { item ->
+                val seatGrade: SeatGrade = seatGrades.first { it.id == item.seatGradeId }
+                val paymentAmount: Money = seatGrade.calculatePaymentAmount(item.discountId, item.reservationCount)
+                PaymentItem(
                     id = UUID.randomUUID(),
-                    performancePriceId = info.performancePriceId,
-                    reservationCount = info.reservationCount,
-                    discountId = info.discountId,
-                    paymentAmount = finalAmount,
+                    seatGradeId = item.seatGradeId,
+                    reservationCount = item.reservationCount,
+                    discountId = item.discountId,
+                    paymentAmount = paymentAmount,
                 )
             }
 
@@ -63,23 +53,23 @@ class PaymentService(
             Payment.create(
                 userId = request.userId,
                 paymentMethod = request.paymentMethod,
-                paymentInfos = paymentInfos,
+                paymentItems = paymentItems,
             )
         paymentRepository.save(payment)
-        return StartPaymentResponse(paymentId = payment.id, totalAmount = payment.totalAmount.amount)
+        return PaymentStartResponse(paymentId = payment.id, totalAmount = payment.totalAmount.amount)
     }
 
     @Transactional
-    fun completePayment(request: CompletePaymentRequest) {
+    fun completePayment(request: PaymentCompleteRequest) {
         // TODO: 외부 결제 서버에 데이터 검증 요청
 
         // 예매가 만료되지 않았는지 확인
         val reservation: Reservation = reservationRepository.getById(request.reservationId)
-        if (reservation.isExpired) throw BusinessException(ReservationErrorCode.EXPIRED)
+        if (reservation.isExpired) throw BusinessException(EXPIRED)
 
         // 예매 기간이 지난 회차가 아닌지 확인
         val performance = performanceRepository.getById(reservation.performanceId)
-        if (!performance.isAvailableRoundId(reservation.roundId)) throw BusinessException(ReservationErrorCode.ROUND_NOT_AVAILABLE)
+        if (!performance.isAvailableRoundId(reservation.roundId)) throw BusinessException(ROUND_NOT_AVAILABLE)
 
         // 예매 확정 처리
         val confirmedReservation = reservation.confirm(request.userId, request.paymentId)
@@ -89,15 +79,4 @@ class PaymentService(
         val completedPayment = paymentRepository.getById(request.paymentId).complete()
         paymentRepository.save(completedPayment)
     }
-
-    private fun StartPaymentRequest.validate(reservation: Reservation) {
-        val isPriceCountDifferent: Boolean = reservation.priceIdCountMap != paymentRequestInfos.priceCount
-        if (isPriceCountDifferent) throw BusinessException(ReservationErrorCode.INVALID_RESERVE_REQUEST)
-    }
-
-    private val List<PaymentRequestInfo>.priceCount: Map<UUID, Int>
-        get() =
-            groupBy { it.performancePriceId }.mapValues {
-                it.value.sumOf { paymentInfo -> paymentInfo.reservationCount }
-            }
 }

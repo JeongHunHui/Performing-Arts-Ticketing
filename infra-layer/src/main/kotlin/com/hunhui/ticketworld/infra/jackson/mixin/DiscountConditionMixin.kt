@@ -2,7 +2,7 @@ package com.hunhui.ticketworld.infra.jackson.mixin
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.hunhui.ticketworld.domain.discount.DiscountCondition
+import com.hunhui.ticketworld.domain.seatgrade.DiscountCondition
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
@@ -11,8 +11,7 @@ import com.hunhui.ticketworld.domain.discount.DiscountCondition
 )
 @JsonSubTypes(
     JsonSubTypes.Type(DiscountCondition.ReservationDate::class, name = "RESERVATION_DATE"),
-    JsonSubTypes.Type(DiscountCondition.RoundIds::class, name = "ROUND_ID"),
+    JsonSubTypes.Type(DiscountCondition.PerformanceDate::class, name = "PERFORMANCE_DATE"),
     JsonSubTypes.Type(DiscountCondition.Certificate::class, name = "CERTIFICATE"),
-    JsonSubTypes.Type(DiscountCondition.PerformancePriceId::class, name = "PERFORMANCE_PRICE_ID"),
 )
 interface DiscountConditionMixin

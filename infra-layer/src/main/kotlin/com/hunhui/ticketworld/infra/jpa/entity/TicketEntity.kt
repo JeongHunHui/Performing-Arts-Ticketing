@@ -17,14 +17,12 @@ internal class TicketEntity(
     val performanceRoundId: UUID,
     @Column(name = "seatAreaId", nullable = false)
     val seatAreaId: UUID,
-    @Column(name = "seatId", nullable = false)
-    val seatId: UUID,
-    @Column(name = "performancePriceId", nullable = false)
-    val performancePriceId: UUID,
+    @Column(name = "seatPositionId", nullable = false)
+    val seatPositionId: UUID,
+    @Column(name = "seatGradeId", nullable = false)
+    val seatGradeId: UUID,
     @Column(name = "reservationId", nullable = true)
     val reservationId: UUID? = null,
-    @Column(name = "price", nullable = false)
-    val price: Long,
     @Column(name = "isPaid", nullable = true)
     val isPaid: Boolean,
     @Column(name = "expireTime", nullable = false)

@@ -12,14 +12,14 @@ import java.util.UUID
 
 @Tag(name = "Reservation", description = "예매 관련 API")
 interface ReservationApiDoc {
-    @Operation(summary = "티켓 목록 API")
+    @Operation(summary = "티켓 예매 여부 목록 조회 API")
     fun findAllTickets(
         @RequestParam roundId: UUID,
         @RequestParam areaId: UUID,
     ): ResponseEntity<TicketListResponse>
 
     @Operation(summary = "티켓 임시 예매 API")
-    fun tempReservation(
-        @RequestBody tempReserveRequest: TempReserveRequest,
+    fun tempReserve(
+        @RequestBody request: TempReserveRequest,
     ): ResponseEntity<TempReserveResponse>
 }

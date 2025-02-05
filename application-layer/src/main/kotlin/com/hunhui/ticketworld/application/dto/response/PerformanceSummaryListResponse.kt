@@ -15,9 +15,8 @@ data class PerformanceSummaryListResponse(
                         PerformanceSummaryResponse(
                             id = it.id,
                             title = it.title,
-                            performanceStartDate = it.startDate,
-                            performanceFinishDate = it.finishDate,
-                            minimumPrice = it.minimumPrice.amount,
+                            startDate = it.startDate,
+                            finishDate = it.finishDate,
                             imageUrl = it.imageUrl,
                             location = it.location,
                         )
@@ -28,9 +27,8 @@ data class PerformanceSummaryListResponse(
     data class PerformanceSummaryResponse(
         val id: UUID,
         val title: String,
-        val performanceStartDate: LocalDate,
-        val performanceFinishDate: LocalDate,
-        val minimumPrice: Long,
+        val startDate: LocalDate,
+        val finishDate: LocalDate,
         val imageUrl: String,
         val location: String,
     )

@@ -23,10 +23,10 @@ class ReservationController(
     override fun findAllTickets(
         @RequestParam roundId: UUID,
         @RequestParam areaId: UUID,
-    ): ResponseEntity<TicketListResponse> = ResponseEntity.ok(reservationService.findAll(roundId, areaId))
+    ): ResponseEntity<TicketListResponse> = ResponseEntity.ok(reservationService.findAllTickets(roundId, areaId))
 
     @PatchMapping("/temp")
-    override fun tempReservation(
-        @RequestBody tempReserveRequest: TempReserveRequest,
-    ): ResponseEntity<TempReserveResponse> = ResponseEntity.ok(reservationService.tempReserve(tempReserveRequest))
+    override fun tempReserve(
+        @RequestBody request: TempReserveRequest,
+    ): ResponseEntity<TempReserveResponse> = ResponseEntity.ok(reservationService.tempReserve(request))
 }

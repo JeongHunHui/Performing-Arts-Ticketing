@@ -11,7 +11,7 @@ class ErrorResponse(
     class Body(
         errorCode: ErrorCode,
     ) {
-        val code: String = errorCode.code
+        val code: String = errorCode.toString()
         val message: String = errorCode.message
     }
 }

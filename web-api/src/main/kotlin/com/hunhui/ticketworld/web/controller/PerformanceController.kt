@@ -31,12 +31,12 @@ class PerformanceController(
     override fun getPerformanceSummaryList(
         @RequestParam(defaultValue = "10") size: Int,
         @RequestParam(defaultValue = "0") page: Int,
-    ): ResponseEntity<PerformanceSummaryListResponse> = ResponseEntity.ok(performanceService.getPerformances(page, size))
+    ): ResponseEntity<PerformanceSummaryListResponse> = ResponseEntity.ok(performanceService.getPerformanceSummaryList(page, size))
 
     @PostMapping
     override fun createPerformance(
-        @RequestBody performanceCreateRequest: PerformanceCreateRequest,
-    ): ResponseEntity<PerformanceCreateResponse> = ResponseEntity.ok(performanceService.createPerformance(performanceCreateRequest))
+        @RequestBody request: PerformanceCreateRequest,
+    ): ResponseEntity<PerformanceCreateResponse> = ResponseEntity.ok(performanceService.createPerformance(request))
 
     @GetMapping("/{performanceId}/seat-areas")
     override fun getSeatAreas(

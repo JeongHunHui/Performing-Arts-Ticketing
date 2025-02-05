@@ -2,10 +2,10 @@ package com.hunhui.ticketworld.application.dto.request
 
 import com.hunhui.ticketworld.domain.performance.Performance
 import com.hunhui.ticketworld.domain.performance.PerformanceGenre
-import com.hunhui.ticketworld.domain.performance.PerformancePrice
 import com.hunhui.ticketworld.domain.performance.PerformanceRound
-import com.hunhui.ticketworld.domain.seat.Seat
-import com.hunhui.ticketworld.domain.seat.SeatArea
+import com.hunhui.ticketworld.domain.seatarea.SeatArea
+import com.hunhui.ticketworld.domain.seatarea.SeatPosition
+import com.hunhui.ticketworld.domain.seatgrade.SeatGrade
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -16,14 +16,15 @@ data class PerformanceCreateRequest(
     val location: String,
     val description: String,
     val maxReservationCount: Int,
-    val performancePrices: List<PerformancePriceRequest>,
+    val seatGrades: List<SeatGradeRequest>,
     val rounds: List<PerformanceRoundRequest>,
     val seatAreas: List<SeatAreaRequest>,
 ) {
-    fun toDomain(): Pair<Performance, List<SeatArea>> {
+    fun toDomain(): Triple<Performance, List<SeatGrade>, List<SeatArea>> {
         val performance = getPerformance()
-        val seatAreas = getSeatAreas(performance.id, performance.performancePrices)
-        return performance to seatAreas
+        val seatGrades = getSeatGrades(performance.id)
+        val seatAreas = getSeatAreas(performance.id, seatGrades)
+        return Triple(performance, seatGrades, seatAreas)
     }
 
     private fun getPerformance(): Performance =
@@ -34,13 +35,6 @@ data class PerformanceCreateRequest(
             location = location,
             description = description,
             maxReservationCount = maxReservationCount,
-            performancePrices =
-                performancePrices.map {
-                    PerformancePrice.create(
-                        priceName = it.priceName,
-                        price = it.price,
-                    )
-                },
             rounds =
                 rounds.map {
                     PerformanceRound.create(
@@ -51,9 +45,18 @@ data class PerformanceCreateRequest(
                 },
         )
 
+    private fun getSeatGrades(performanceId: UUID): List<SeatGrade> =
+        seatGrades.map {
+            SeatGrade.create(
+                performanceId = performanceId,
+                name = it.name,
+                price = it.price,
+            )
+        }
+
     private fun getSeatAreas(
         performanceId: UUID,
-        performancePrices: List<PerformancePrice>,
+        seatGrades: List<SeatGrade>,
     ): List<SeatArea> =
         seatAreas.map {
             SeatArea(
@@ -63,12 +66,12 @@ data class PerformanceCreateRequest(
                 areaName = it.areaName,
                 width = it.width,
                 height = it.height,
-                seats =
-                    it.seats.map { seat ->
-                        Seat(
+                positions =
+                    it.positions.map { seat ->
+                        SeatPosition(
                             id = UUID.randomUUID(),
-                            performancePriceId = performancePrices[seat.priceIndex].id,
-                            seatName = seat.seatName,
+                            seatGradeId = seatGrades[seat.seatGradeIndex].id,
+                            name = seat.name,
                             x = seat.x,
                             y = seat.y,
                         )
@@ -76,8 +79,8 @@ data class PerformanceCreateRequest(
             )
         }
 
-    data class PerformancePriceRequest(
-        val priceName: String,
+    data class SeatGradeRequest(
+        val name: String,
         val price: Long,
     )
 
@@ -92,12 +95,12 @@ data class PerformanceCreateRequest(
         val areaName: String,
         val width: Int,
         val height: Int,
-        val seats: List<SeatRequest>,
+        val positions: List<SeatPositionRequest>,
     )
 
-    data class SeatRequest(
-        val priceIndex: Int,
-        val seatName: String,
+    data class SeatPositionRequest(
+        val seatGradeIndex: Int,
+        val name: String,
         val x: Int,
         val y: Int,
     )

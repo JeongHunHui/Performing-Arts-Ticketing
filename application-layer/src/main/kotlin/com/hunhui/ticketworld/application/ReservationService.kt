@@ -6,10 +6,11 @@ import com.hunhui.ticketworld.application.dto.response.TicketListResponse
 import com.hunhui.ticketworld.common.error.BusinessException
 import com.hunhui.ticketworld.domain.performance.Performance
 import com.hunhui.ticketworld.domain.performance.PerformanceRepository
+import com.hunhui.ticketworld.domain.performance.exception.PerformanceErrorCode.ROUND_NOT_AVAILABLE
 import com.hunhui.ticketworld.domain.reservation.Reservation
 import com.hunhui.ticketworld.domain.reservation.ReservationRepository
 import com.hunhui.ticketworld.domain.reservation.Ticket
-import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode
+import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode.RESERVATION_COUNT_EXCEED
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -19,7 +20,7 @@ class ReservationService(
     private val performanceRepository: PerformanceRepository,
     private val reservationRepository: ReservationRepository,
 ) {
-    fun findAll(
+    fun findAllTickets(
         roundId: UUID,
         areaId: UUID,
     ): TicketListResponse {
@@ -36,7 +37,7 @@ class ReservationService(
         val currentReservationCount = 0
         val isReservationCountExceed: Boolean =
             performance.maxReservationCount < request.ticketIds.size + currentReservationCount
-        if (isReservationCountExceed) throw BusinessException(ReservationErrorCode.RESERVATION_COUNT_EXCEED)
+        if (isReservationCountExceed) throw BusinessException(RESERVATION_COUNT_EXCEED)
 
         // 예매할 티켓들과 유저 id로 임시 예매 생성
         val tickets: List<Ticket> = reservationRepository.getTicketsByIds(request.ticketIds)
@@ -48,7 +49,7 @@ class ReservationService(
             )
 
         // 예매 가능한 회차인지 확인
-        if (!performance.isAvailableRoundId(reservation.roundId)) throw BusinessException(ReservationErrorCode.ROUND_NOT_AVAILABLE)
+        if (!performance.isAvailableRoundId(reservation.roundId)) throw BusinessException(ROUND_NOT_AVAILABLE)
 
         reservationRepository.save(reservation)
         return TempReserveResponse(reservationId = reservation.id)

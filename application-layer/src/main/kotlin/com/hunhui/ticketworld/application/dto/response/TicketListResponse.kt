@@ -13,7 +13,7 @@ data class TicketListResponse(
                     ticketList.map {
                         TicketResponse(
                             id = it.id,
-                            seatId = it.seatId,
+                            seatPositionId = it.seatPositionId,
                             canReserve = it.canTempReserve,
                         )
                     },
@@ -22,7 +22,7 @@ data class TicketListResponse(
 
     data class TicketResponse(
         val id: UUID,
-        val seatId: UUID,
+        val seatPositionId: UUID,
         val canReserve: Boolean,
     )
 }

@@ -1,8 +1,7 @@
 package com.hunhui.ticketworld.domain.performance
 
 import com.hunhui.ticketworld.common.error.AssertUtil.assertErrorCode
-import com.hunhui.ticketworld.domain.performance.exception.PerformanceErrorCode
-import com.hunhui.ticketworld.domain.performance.exception.PerformanceErrorCode.PERFORMANCE_PRICE_IS_EMPTY
+import com.hunhui.ticketworld.domain.performance.exception.PerformanceErrorCode.ROUND_IS_EMPTY
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -19,22 +18,13 @@ class PerformanceTest {
 
         // then
         assertNotNull(performance.id)
-        assertTrue(performance.performancePrices.isNotEmpty())
         assertTrue(performance.rounds.isNotEmpty())
-    }
-
-    @Test
-    fun `공연의 가격이 비어있으면 예외가 발생한다`() {
-        // when & then
-        assertErrorCode(PERFORMANCE_PRICE_IS_EMPTY) {
-            PerformanceFixtureFactory.createValidPerformance(performancePrices = emptyList())
-        }
     }
 
     @Test
     fun `공연 회차가 비어있으면 예외가 발생한다`() {
         // when & then
-        assertErrorCode(PerformanceErrorCode.ROUND_IS_EMPTY) {
+        assertErrorCode(ROUND_IS_EMPTY) {
             PerformanceFixtureFactory.createValidPerformance(rounds = emptyList())
         }
     }
@@ -94,7 +84,7 @@ class PerformanceTest {
     }
 
     @Test
-    fun `availableRounds는 예약 가능한 회차만 필터링한다`() {
+    fun `availableRounds는 예매 가능한 회차만 필터링한다`() {
         // given
         val now = LocalDateTime.now()
         val availableRound =
@@ -123,7 +113,7 @@ class PerformanceTest {
     }
 
     @Test
-    fun `minimumReservationStartTime는 rounds 중 가장 이전인 예약 시작 시간을 반환한다`() {
+    fun `minimumReservationStartTime는 rounds 중 가장 이전인 예매 시작 시간을 반환한다`() {
         // given
         val round1 =
             PerformanceRound.create(
@@ -154,20 +144,5 @@ class PerformanceTest {
 
         // then
         assertEquals(LocalDateTime.of(2025, 1, 1, 0, 0), earliestReservationStart)
-    }
-
-    @Test
-    fun `minimumPrice는 performancePrices 중 가장 낮은 금액을 반환한다`() {
-        // given
-        val performancePrice1 = PerformancePrice.create("VIP", 50000)
-        val performancePrice2 = PerformancePrice.create("R석", 40000)
-        val performance =
-            PerformanceFixtureFactory.createValidPerformance(performancePrices = listOf(performancePrice1, performancePrice2))
-
-        // when
-        val minPrice = performance.minimumPrice
-
-        // then
-        assertEquals(40000L, minPrice.amount)
     }
 }

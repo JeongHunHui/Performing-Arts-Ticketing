@@ -1,6 +1,6 @@
 package com.hunhui.ticketworld.infra.jpa.entity
 
-import com.hunhui.ticketworld.domain.discount.DiscountApplyCountType
+import com.hunhui.ticketworld.domain.seatgrade.DiscountApplyCountType
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -19,10 +19,10 @@ internal class DiscountEntity(
     @Id
     @Column(name = "id", nullable = false)
     val id: UUID,
-    @Column(name = "performance_id", nullable = false)
-    val performanceId: UUID,
-    @Column(name = "discount_name", nullable = false)
-    val discountName: String,
+    @Column(name = "seat_grade_id", nullable = false)
+    val seatGradeId: UUID,
+    @Column(name = "name", nullable = false)
+    val name: String,
     @OneToMany(
         mappedBy = "discountId",
         cascade = [CascadeType.ALL],
@@ -35,6 +35,6 @@ internal class DiscountEntity(
     val applyCountType: DiscountApplyCountType,
     @Column(name = "apply_count_amount")
     val applyCountAmount: Int?,
-    @Column(name = "discount_rate", nullable = false)
-    val discountRate: BigDecimal,
+    @Column(name = "rate", nullable = false)
+    val rate: BigDecimal,
 ) : BaseTimeEntity()

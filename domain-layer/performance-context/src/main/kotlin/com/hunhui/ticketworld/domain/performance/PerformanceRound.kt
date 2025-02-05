@@ -30,6 +30,6 @@ class PerformanceRound(
         )
     }
 
-    val isReservationAvailable: Boolean
+    internal val isReservationAvailable: Boolean
         get() = LocalDateTime.now() in reservationStartTime..reservationEndTime
 }

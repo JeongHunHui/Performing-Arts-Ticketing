@@ -1,6 +1,6 @@
 package com.hunhui.ticketworld.application.dto.response
 
-import com.hunhui.ticketworld.domain.seat.SeatArea
+import com.hunhui.ticketworld.domain.seatarea.SeatArea
 import java.util.UUID
 
 data class SeatAreasResponse(
@@ -16,12 +16,12 @@ data class SeatAreasResponse(
                         areaName = seatArea.areaName,
                         width = seatArea.width,
                         height = seatArea.height,
-                        seats =
-                            seatArea.seats.map { seat ->
-                                SeatResponse(
+                        positions =
+                            seatArea.positions.map { seat ->
+                                SeatPositionResponse(
                                     id = seat.id,
-                                    performancePriceId = seat.performancePriceId,
-                                    seatName = seat.seatName,
+                                    seatGradeId = seat.seatGradeId,
+                                    name = seat.name,
                                     x = seat.x,
                                     y = seat.y,
                                 )
@@ -37,13 +37,13 @@ data class SeatAreasResponse(
         val areaName: String,
         val width: Int,
         val height: Int,
-        val seats: List<SeatResponse>,
+        val positions: List<SeatPositionResponse>,
     )
 
-    data class SeatResponse(
+    data class SeatPositionResponse(
         val id: UUID,
-        val performancePriceId: UUID,
-        val seatName: String,
+        val seatGradeId: UUID,
+        val name: String,
         val x: Int,
         val y: Int,
     )

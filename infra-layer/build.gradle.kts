@@ -13,10 +13,10 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2")
 
     implementation(project(":domain-layer:performance-context"))
-    implementation(project(":domain-layer:seat-context"))
+    implementation(project(":domain-layer:seat-area-context"))
     implementation(project(":domain-layer:user-context"))
     implementation(project(":domain-layer:reservation-context"))
-    implementation(project(":domain-layer:discount-context"))
+    implementation(project(":domain-layer:seat-grade-context"))
     implementation(project(":domain-layer:payment-context"))
 
     // jpa

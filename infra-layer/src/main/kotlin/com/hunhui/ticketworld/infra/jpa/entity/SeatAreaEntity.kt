@@ -31,5 +31,5 @@ internal class SeatAreaEntity(
         orphanRemoval = true,
         fetch = FetchType.LAZY,
     )
-    val seats: List<SeatEntity> = emptyList(),
+    val positions: List<SeatPositionEntity> = emptyList(),
 ) : BaseTimeEntity()

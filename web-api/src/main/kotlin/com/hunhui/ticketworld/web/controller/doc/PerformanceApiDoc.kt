@@ -20,7 +20,7 @@ interface PerformanceApiDoc {
         @PathVariable("performanceId") performanceId: UUID,
     ): ResponseEntity<PerformanceResponse>
 
-    @Operation(summary = "공연 정보 목록 API")
+    @Operation(summary = "공연 정보 목록 조회 API")
     fun getPerformanceSummaryList(
         @RequestParam(defaultValue = "10") size: Int,
         @RequestParam(defaultValue = "0") page: Int,
@@ -28,10 +28,10 @@ interface PerformanceApiDoc {
 
     @Operation(summary = "공연 생성 API")
     fun createPerformance(
-        @RequestBody performanceCreateRequest: PerformanceCreateRequest,
+        @RequestBody request: PerformanceCreateRequest,
     ): ResponseEntity<PerformanceCreateResponse>
 
-    @Operation(summary = "좌석 영역 목록 조회 API")
+    @Operation(summary = "공연 좌석 영역 목록 조회 API")
     fun getSeatAreas(
         @PathVariable("performanceId") performanceId: UUID,
     ): ResponseEntity<SeatAreasResponse>

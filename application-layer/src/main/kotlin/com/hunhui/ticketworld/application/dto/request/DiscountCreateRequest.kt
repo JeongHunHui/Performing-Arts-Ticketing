@@ -1,12 +1,9 @@
 package com.hunhui.ticketworld.application.dto.request
 
-import com.hunhui.ticketworld.domain.discount.Discount
-import com.hunhui.ticketworld.domain.discount.DiscountApplyCount
-import com.hunhui.ticketworld.domain.discount.DiscountApplyCountType
-import com.hunhui.ticketworld.domain.discount.DiscountCondition
-import com.hunhui.ticketworld.domain.discount.DiscountRate
+import com.hunhui.ticketworld.domain.seatgrade.Discount
+import com.hunhui.ticketworld.domain.seatgrade.DiscountApplyCountType
+import com.hunhui.ticketworld.domain.seatgrade.DiscountCondition
 import java.math.BigDecimal
-import java.util.UUID
 
 data class DiscountCreateRequest(
     val discountName: String,
@@ -15,13 +12,12 @@ data class DiscountCreateRequest(
     val applyCountAmount: Int?,
     val discountRate: BigDecimal,
 ) {
-    fun domain(performanceId: UUID): Discount =
-        Discount(
-            id = UUID.randomUUID(),
-            performanceId = performanceId,
-            discountName = discountName,
-            discountConditions = discountConditions,
-            applyCount = DiscountApplyCount.create(applyCountType, applyCountAmount),
-            discountRate = DiscountRate(discountRate),
+    fun toDomain(): Discount =
+        Discount.create(
+            name = discountName,
+            conditions = discountConditions,
+            applyCountType = applyCountType,
+            applyCountAmount = applyCountAmount,
+            rate = discountRate,
         )
 }

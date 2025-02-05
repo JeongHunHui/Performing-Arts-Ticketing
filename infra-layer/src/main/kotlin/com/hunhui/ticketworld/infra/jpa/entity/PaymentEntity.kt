@@ -22,16 +22,16 @@ internal class PaymentEntity(
     @Column(name = "user_id", nullable = false)
     val userId: UUID,
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_status", nullable = false)
-    val paymentStatus: PaymentStatus,
+    @Column(name = "status", nullable = false)
+    val status: PaymentStatus,
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_method", nullable = false)
-    val paymentMethod: PaymentMethod,
+    @Column(name = "method", nullable = false)
+    val method: PaymentMethod,
     @OneToMany(
         mappedBy = "paymentId",
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
         fetch = FetchType.LAZY,
     )
-    val paymentInfos: List<PaymentInfoEntity> = listOf(),
+    val items: List<PaymentItemEntity> = listOf(),
 ) : BaseTimeEntity()

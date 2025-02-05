@@ -1,10 +1,10 @@
 package com.hunhui.ticketworld.infra.jpa.repository
 
-import com.hunhui.ticketworld.domain.seat.Seat
-import com.hunhui.ticketworld.domain.seat.SeatArea
-import com.hunhui.ticketworld.domain.seat.SeatAreaRepository
+import com.hunhui.ticketworld.domain.seatarea.SeatArea
+import com.hunhui.ticketworld.domain.seatarea.SeatAreaRepository
+import com.hunhui.ticketworld.domain.seatarea.SeatPosition
 import com.hunhui.ticketworld.infra.jpa.entity.SeatAreaEntity
-import com.hunhui.ticketworld.infra.jpa.entity.SeatEntity
+import com.hunhui.ticketworld.infra.jpa.entity.SeatPositionEntity
 import org.springframework.stereotype.Repository
 import java.util.UUID
 
@@ -30,12 +30,12 @@ internal class SeatAreaRepositoryImpl(
                 areaName = areaName,
                 width = width,
                 height = height,
-                seats =
-                    seats.map {
-                        Seat(
+                positions =
+                    positions.map {
+                        SeatPosition(
                             id = it.id,
-                            performancePriceId = it.performancePriceId,
-                            seatName = it.seatName,
+                            seatGradeId = it.seatGradeId,
+                            name = it.name,
                             x = it.x,
                             y = it.y,
                         )
@@ -51,13 +51,13 @@ internal class SeatAreaRepositoryImpl(
                 areaName = areaName,
                 width = width,
                 height = height,
-                seats =
-                    seats.map {
-                        SeatEntity(
+                positions =
+                    positions.map {
+                        SeatPositionEntity(
                             id = it.id,
                             seatAreaId = id,
-                            performancePriceId = it.performancePriceId,
-                            seatName = it.seatName,
+                            seatGradeId = it.seatGradeId,
+                            name = it.name,
                             x = it.x,
                             y = it.y,
                         )

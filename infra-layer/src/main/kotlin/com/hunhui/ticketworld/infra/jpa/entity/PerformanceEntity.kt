@@ -37,7 +37,7 @@ internal class PerformanceEntity(
         orphanRemoval = true,
         fetch = FetchType.LAZY,
     )
-    val performancePrices: List<PerformancePriceEntity> = emptyList(),
+    val seatGrades: List<SeatGradeEntity> = emptyList(),
     @OneToMany(
         mappedBy = "performanceId",
         cascade = [CascadeType.ALL],

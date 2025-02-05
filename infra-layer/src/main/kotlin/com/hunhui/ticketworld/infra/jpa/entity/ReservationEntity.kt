@@ -24,6 +24,6 @@ internal class ReservationEntity(
     val paymentId: UUID?,
     @OneToMany(mappedBy = "reservationId", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     val tickets: List<TicketEntity> = mutableListOf(),
-    @Column(name = "reservedAt", nullable = true)
-    val reservedAt: LocalDateTime?,
+    @Column(name = "date", nullable = true)
+    val date: LocalDateTime?,
 ) : BaseTimeEntity()

@@ -1,7 +1,6 @@
 package com.hunhui.ticketworld.domain.reservation
 
 import com.hunhui.ticketworld.common.error.BusinessException
-import com.hunhui.ticketworld.common.vo.Money
 import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode.CANNOT_CONFIRM_RESERVE
 import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode.CANNOT_TEMP_RESERVE
 import java.time.LocalDateTime
@@ -9,31 +8,28 @@ import java.util.UUID
 
 class Ticket(
     val id: UUID,
-    val roundId: UUID,
-    val areaId: UUID,
-    val seatId: UUID,
-    val priceId: UUID,
+    val performanceRoundId: UUID,
+    val seatAreaId: UUID,
+    val seatPositionId: UUID,
+    val seatGradeId: UUID,
     val reservationId: UUID?,
-    val price: Money,
     val isPaid: Boolean,
     val expireTime: LocalDateTime,
 ) {
     companion object {
         fun create(
-            roundId: UUID,
-            areaId: UUID,
-            seatId: UUID,
-            priceId: UUID,
-            price: Money,
+            performanceRoundId: UUID,
+            seatAreaId: UUID,
+            seatPositionId: UUID,
+            seatGradeId: UUID,
         ): Ticket =
             Ticket(
                 id = UUID.randomUUID(),
-                roundId = roundId,
-                areaId = areaId,
-                seatId = seatId,
-                priceId = priceId,
+                performanceRoundId = performanceRoundId,
+                seatAreaId = seatAreaId,
+                seatPositionId = seatPositionId,
+                seatGradeId = seatGradeId,
                 reservationId = null,
-                price = price,
                 isPaid = false,
                 expireTime = LocalDateTime.now(),
             )
@@ -55,12 +51,11 @@ class Ticket(
         if (!canTempReserve) throw BusinessException(CANNOT_TEMP_RESERVE)
         return Ticket(
             id = id,
-            roundId = roundId,
-            areaId = areaId,
-            seatId = seatId,
-            priceId = priceId,
+            performanceRoundId = performanceRoundId,
+            seatAreaId = seatAreaId,
+            seatPositionId = seatPositionId,
+            seatGradeId = seatGradeId,
             reservationId = reservationId,
-            price = price,
             isPaid = false,
             expireTime = getExpireTime(),
         )
@@ -70,12 +65,11 @@ class Ticket(
         if (!canConfirmReserve) throw BusinessException(CANNOT_CONFIRM_RESERVE)
         return Ticket(
             id = id,
-            roundId = roundId,
-            areaId = areaId,
-            seatId = seatId,
-            priceId = priceId,
+            performanceRoundId = performanceRoundId,
+            seatAreaId = seatAreaId,
+            seatPositionId = seatPositionId,
+            seatGradeId = seatGradeId,
             reservationId = reservationId,
-            price = price,
             isPaid = true,
             expireTime = expireTime,
         )

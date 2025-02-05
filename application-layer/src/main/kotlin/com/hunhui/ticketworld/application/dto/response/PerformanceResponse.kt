@@ -2,6 +2,7 @@ package com.hunhui.ticketworld.application.dto.response
 
 import com.hunhui.ticketworld.domain.performance.Performance
 import com.hunhui.ticketworld.domain.performance.PerformanceGenre
+import com.hunhui.ticketworld.domain.seatgrade.SeatGrade
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -9,33 +10,36 @@ import java.util.UUID
 data class PerformanceResponse(
     val id: UUID,
     val title: String,
-    val performanceStartDate: LocalDate,
-    val performanceFinishDate: LocalDate,
+    val startDate: LocalDate,
+    val finishDate: LocalDate,
     val genre: PerformanceGenre,
     val imageUrl: String,
     val location: String,
     val description: String,
     val minimumReservationStartTime: LocalDateTime,
-    val performancePrices: List<PerformancePriceResponse>,
+    val seatGrades: List<SeatGradeResponse>,
     val rounds: List<PerformanceRoundResponse>,
 ) {
     companion object {
-        fun from(performance: Performance): PerformanceResponse =
+        fun from(
+            performance: Performance,
+            seatGrades: List<SeatGrade>,
+        ): PerformanceResponse =
             PerformanceResponse(
                 id = performance.id,
                 title = performance.title,
-                performanceStartDate = performance.startDate,
-                performanceFinishDate = performance.finishDate,
+                startDate = performance.startDate,
+                finishDate = performance.finishDate,
                 genre = performance.genre,
                 imageUrl = performance.imageUrl,
                 location = performance.location,
                 description = performance.description,
                 minimumReservationStartTime = performance.minimumReservationStartTime,
-                performancePrices =
-                    performance.performancePrices.map {
-                        PerformancePriceResponse(
-                            priceId = it.id,
-                            priceName = it.priceName,
+                seatGrades =
+                    seatGrades.map {
+                        SeatGradeResponse(
+                            id = it.id,
+                            name = it.name,
                             price = it.price.amount,
                         )
                     },
@@ -49,9 +53,9 @@ data class PerformanceResponse(
             )
     }
 
-    data class PerformancePriceResponse(
-        val priceId: UUID,
-        val priceName: String,
+    data class SeatGradeResponse(
+        val id: UUID,
+        val name: String,
         val price: Long,
     )
 

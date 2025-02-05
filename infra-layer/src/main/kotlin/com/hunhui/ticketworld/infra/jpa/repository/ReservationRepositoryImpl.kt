@@ -1,11 +1,10 @@
 package com.hunhui.ticketworld.infra.jpa.repository
 
 import com.hunhui.ticketworld.common.error.BusinessException
-import com.hunhui.ticketworld.common.vo.Money
 import com.hunhui.ticketworld.domain.reservation.Reservation
 import com.hunhui.ticketworld.domain.reservation.ReservationRepository
 import com.hunhui.ticketworld.domain.reservation.Ticket
-import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode
+import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode.NOT_FOUND
 import com.hunhui.ticketworld.infra.jpa.entity.ReservationEntity
 import com.hunhui.ticketworld.infra.jpa.entity.TicketEntity
 import org.springframework.data.repository.findByIdOrNull
@@ -17,8 +16,7 @@ internal class ReservationRepositoryImpl(
     private val ticketJpaRepository: TicketJpaRepository,
     private val reservationJpaRepository: ReservationJpaRepository,
 ) : ReservationRepository {
-    override fun getById(id: UUID): Reservation =
-        reservationJpaRepository.findByIdOrNull(id)?.domain ?: throw BusinessException(ReservationErrorCode.NOT_FOUND)
+    override fun getById(id: UUID): Reservation = reservationJpaRepository.findByIdOrNull(id)?.domain ?: throw BusinessException(NOT_FOUND)
 
     override fun getTicketsByIds(ids: List<UUID>): List<Ticket> = ticketJpaRepository.findAllById(ids).map { it.domain }
 
@@ -44,7 +42,7 @@ internal class ReservationRepositoryImpl(
                 userId = userId,
                 paymentId = paymentId,
                 tickets = tickets.map { it.domain },
-                date = reservedAt,
+                date = date,
             )
         }
 
@@ -52,12 +50,11 @@ internal class ReservationRepositoryImpl(
         get() =
             Ticket(
                 id = id,
-                roundId = performanceRoundId,
-                areaId = seatAreaId,
-                seatId = seatId,
-                priceId = performancePriceId,
+                performanceRoundId = performanceRoundId,
+                seatAreaId = seatAreaId,
+                seatPositionId = seatPositionId,
+                seatGradeId = seatGradeId,
                 reservationId = reservationId,
-                price = Money(price),
                 isPaid = isPaid,
                 expireTime = expireTime,
             )
@@ -70,19 +67,18 @@ internal class ReservationRepositoryImpl(
                 userId = userId,
                 paymentId = paymentId,
                 tickets = tickets.map { it.entity },
-                reservedAt = date,
+                date = date,
             )
 
     private val Ticket.entity: TicketEntity
         get() =
             TicketEntity(
                 id = id,
-                performanceRoundId = roundId,
-                seatAreaId = areaId,
-                seatId = seatId,
-                performancePriceId = priceId,
+                performanceRoundId = performanceRoundId,
+                seatAreaId = seatAreaId,
+                seatPositionId = seatPositionId,
+                seatGradeId = seatGradeId,
                 reservationId = reservationId,
-                price = price.amount,
                 isPaid = isPaid,
                 expireTime = expireTime,
             )

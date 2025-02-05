@@ -10,7 +10,6 @@ object PerformanceFixtureFactory {
         location: String = "테스트 장소",
         description: String = "테스트 공연 설명",
         maxReservationCount: Int = 5,
-        performancePrices: List<PerformancePrice> = listOf(createValidPerformancePrice(), createValidPerformancePrice("R석", 80000)),
         rounds: List<PerformanceRound> =
             listOf(
                 createValidPerformanceRound(),
@@ -28,14 +27,8 @@ object PerformanceFixtureFactory {
             location = location,
             description = description,
             maxReservationCount = maxReservationCount,
-            performancePrices = performancePrices,
             rounds = rounds,
         )
-
-    private fun createValidPerformancePrice(
-        priceName: String = "VIP",
-        price: Long = 100000,
-    ): PerformancePrice = PerformancePrice.create(priceName, price)
 
     private fun createValidPerformanceRound(
         roundStartTime: LocalDateTime = LocalDateTime.now().plusDays(3),

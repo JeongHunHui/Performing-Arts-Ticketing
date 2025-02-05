@@ -9,8 +9,9 @@ import com.hunhui.ticketworld.domain.performance.PerformanceRepository
 import com.hunhui.ticketworld.domain.performance.PerformanceRound
 import com.hunhui.ticketworld.domain.reservation.ReservationRepository
 import com.hunhui.ticketworld.domain.reservation.Ticket
-import com.hunhui.ticketworld.domain.seat.SeatArea
-import com.hunhui.ticketworld.domain.seat.SeatAreaRepository
+import com.hunhui.ticketworld.domain.seatarea.SeatArea
+import com.hunhui.ticketworld.domain.seatarea.SeatAreaRepository
+import com.hunhui.ticketworld.domain.seatgrade.SeatGradeRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -18,12 +19,17 @@ import java.util.UUID
 @Service
 class PerformanceService(
     private val performanceRepository: PerformanceRepository,
+    private val seatGradeRepository: SeatGradeRepository,
     private val seatAreaRepository: SeatAreaRepository,
     private val reservationRepository: ReservationRepository,
 ) {
-    fun getPerformance(performanceId: UUID): PerformanceResponse = PerformanceResponse.from(performanceRepository.getById(performanceId))
+    fun getPerformance(performanceId: UUID): PerformanceResponse =
+        PerformanceResponse.from(
+            performance = performanceRepository.getById(performanceId),
+            seatGrades = seatGradeRepository.findAllByPerformanceId(performanceId),
+        )
 
-    fun getPerformances(
+    fun getPerformanceSummaryList(
         page: Int,
         size: Int,
     ): PerformanceSummaryListResponse {
@@ -32,21 +38,21 @@ class PerformanceService(
     }
 
     @Transactional
-    fun createPerformance(performanceCreateRequest: PerformanceCreateRequest): PerformanceCreateResponse {
-        val (performance, seatAreas) = performanceCreateRequest.toDomain()
+    fun createPerformance(request: PerformanceCreateRequest): PerformanceCreateResponse {
+        val (performance, seatGrades, seatAreas) = request.toDomain()
         performanceRepository.save(performance)
+        seatGradeRepository.saveAll(seatGrades)
         seatAreaRepository.saveAll(seatAreas)
         val performanceRounds: List<PerformanceRound> = performance.rounds
         val tickets =
             seatAreas.flatMap { seatArea ->
-                seatArea.seats.flatMap { seat ->
+                seatArea.positions.flatMap { seat ->
                     performanceRounds.map { round ->
                         Ticket.create(
-                            roundId = round.id,
-                            areaId = seatArea.id,
-                            seatId = seat.id,
-                            priceId = seat.performancePriceId,
-                            price = performance.getPriceById(seat.performancePriceId),
+                            performanceRoundId = round.id,
+                            seatAreaId = seatArea.id,
+                            seatPositionId = seat.id,
+                            seatGradeId = seat.seatGradeId,
                         )
                     }
                 }
