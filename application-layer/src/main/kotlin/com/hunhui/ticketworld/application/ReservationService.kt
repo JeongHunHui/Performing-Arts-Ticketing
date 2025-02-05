@@ -42,7 +42,7 @@ class ReservationService(
         // 예매할 티켓들과 유저 id로 임시 예매 생성
         val tickets: List<Ticket> = reservationRepository.getTicketsByIds(request.ticketIds)
         val reservation =
-            Reservation.create(
+            Reservation.createTempReservation(
                 tickets = tickets,
                 userId = request.userId,
                 performanceId = request.performanceId,

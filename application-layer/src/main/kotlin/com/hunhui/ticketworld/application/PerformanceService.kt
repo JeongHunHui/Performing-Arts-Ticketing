@@ -23,6 +23,7 @@ class PerformanceService(
     private val seatAreaRepository: SeatAreaRepository,
     private val reservationRepository: ReservationRepository,
 ) {
+    @Transactional(readOnly = true)
     fun getPerformance(performanceId: UUID): PerformanceResponse =
         PerformanceResponse.from(
             performance = performanceRepository.getById(performanceId),

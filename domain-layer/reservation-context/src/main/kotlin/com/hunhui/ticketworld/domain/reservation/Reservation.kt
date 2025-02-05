@@ -20,7 +20,7 @@ class Reservation(
     }
 
     companion object {
-        fun create(
+        fun createTempReservation(
             tickets: List<Ticket>,
             userId: UUID,
             performanceId: UUID,

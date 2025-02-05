@@ -10,25 +10,41 @@ class Payment(
     val userId: UUID,
     val status: PaymentStatus,
     val method: PaymentMethod,
-    val items: List<PaymentItem>,
+    val items: MutableList<PaymentItem>,
 ) {
     companion object {
         fun create(
             userId: UUID,
             paymentMethod: PaymentMethod,
-            paymentItems: List<PaymentItem>,
         ): Payment =
             Payment(
                 id = UUID.randomUUID(),
                 userId = userId,
                 status = PaymentStatus.PENDING,
                 method = paymentMethod,
-                items = paymentItems,
+                items = mutableListOf(),
             )
     }
 
     val totalAmount: Money
         get() = Money(items.sumOf { it.paymentAmount.amount })
+
+    fun addItem(
+        seatGradeId: UUID,
+        reservationCount: Int,
+        discountId: UUID?,
+        paymentAmount: Money,
+    ) {
+        items.add(
+            PaymentItem(
+                id = UUID.randomUUID(),
+                seatGradeId = seatGradeId,
+                reservationCount = reservationCount,
+                discountId = discountId,
+                paymentAmount = paymentAmount,
+            ),
+        )
+    }
 
     fun complete(): Payment {
         if (status != PaymentStatus.PENDING) throw BusinessException(CANNOT_COMPLETE)
