@@ -4,7 +4,6 @@ import com.hunhui.ticketworld.application.dto.request.PaymentCompleteRequest
 import com.hunhui.ticketworld.application.dto.request.PaymentStartRequest
 import com.hunhui.ticketworld.application.dto.response.PaymentStartResponse
 import com.hunhui.ticketworld.common.error.BusinessException
-import com.hunhui.ticketworld.common.vo.Money
 import com.hunhui.ticketworld.domain.payment.Payment
 import com.hunhui.ticketworld.domain.payment.PaymentRepository
 import com.hunhui.ticketworld.domain.performance.PerformanceRepository
@@ -39,12 +38,13 @@ class PaymentService(
 
             // 좌석 등급, 예매 수량, 할인 ID를 통해 결제 항목의 금액 계산
             // discountId나 예매 수량이 잘못되었을 경우 예외 발생
-            val paymentAmount: Money = seatGrade.calculatePaymentAmount(item.discountId, item.reservationCount)
+            val (discountName, originalPrice, discountedPrice) = seatGrade.calculatePaymentAmount(item.discountId, item.reservationCount)
             payment.addItem(
-                seatGradeId = item.seatGradeId,
+                seatGradeName = seatGrade.name,
                 reservationCount = item.reservationCount,
-                discountId = item.discountId,
-                paymentAmount = paymentAmount,
+                discountName = discountName,
+                originalPrice = originalPrice,
+                discountedPrice = discountedPrice,
             )
         }
         paymentRepository.save(payment)

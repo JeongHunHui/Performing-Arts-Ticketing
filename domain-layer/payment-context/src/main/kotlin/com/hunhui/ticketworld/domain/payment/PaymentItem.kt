@@ -5,8 +5,9 @@ import java.util.UUID
 
 class PaymentItem(
     val id: UUID,
-    val seatGradeId: UUID,
+    val seatGradeName: String,
     val reservationCount: Int,
-    val discountId: UUID?,
-    val paymentAmount: Money,
+    val discountName: String,
+    val originalPrice: Money,
+    val discountedPrice: Money,
 )

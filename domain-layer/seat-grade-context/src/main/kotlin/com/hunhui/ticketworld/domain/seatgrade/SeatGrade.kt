@@ -39,9 +39,9 @@ class SeatGrade(
     fun calculatePaymentAmount(
         discountId: UUID?,
         reservationCount: Int,
-    ): Money {
+    ): Triple<String, Money, Money> {
         val discount = getDiscountById(discountId)
-        return discount.apply(price, reservationCount)
+        return Triple(discount.name, Discount.DEFAULT.apply(price, reservationCount), discount.apply(price, reservationCount))
     }
 
     private fun getDiscountById(discountId: UUID?): Discount {

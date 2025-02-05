@@ -27,21 +27,23 @@ class Payment(
     }
 
     val totalAmount: Money
-        get() = Money(items.sumOf { it.paymentAmount.amount })
+        get() = Money(items.sumOf { it.discountedPrice.amount })
 
     fun addItem(
-        seatGradeId: UUID,
+        seatGradeName: String,
         reservationCount: Int,
-        discountId: UUID?,
-        paymentAmount: Money,
+        discountName: String,
+        originalPrice: Money,
+        discountedPrice: Money,
     ) {
         items.add(
             PaymentItem(
                 id = UUID.randomUUID(),
-                seatGradeId = seatGradeId,
+                seatGradeName = seatGradeName,
                 reservationCount = reservationCount,
-                discountId = discountId,
-                paymentAmount = paymentAmount,
+                discountName = discountName,
+                originalPrice = originalPrice,
+                discountedPrice = discountedPrice,
             ),
         )
     }

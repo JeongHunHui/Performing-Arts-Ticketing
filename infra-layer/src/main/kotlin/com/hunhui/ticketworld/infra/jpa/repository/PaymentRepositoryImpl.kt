@@ -30,15 +30,17 @@ internal class PaymentRepositoryImpl(
                 status = status,
                 method = method,
                 items =
-                    items.map {
-                        PaymentItem(
-                            id = it.id,
-                            seatGradeId = it.seatGradeId,
-                            reservationCount = it.reservationCount,
-                            discountId = it.discountId,
-                            paymentAmount = Money(it.paymentAmount),
-                        )
-                    },
+                    items
+                        .map {
+                            PaymentItem(
+                                id = it.id,
+                                seatGradeName = it.seatGradeName,
+                                reservationCount = it.reservationCount,
+                                discountName = it.discountName,
+                                originalPrice = Money(it.originalPrice),
+                                discountedPrice = Money(it.discountedPrice),
+                            )
+                        }.toMutableList(),
             )
 
     private val Payment.entity: PaymentEntity
@@ -53,10 +55,11 @@ internal class PaymentRepositoryImpl(
                         PaymentItemEntity(
                             id = it.id,
                             paymentId = id,
-                            seatGradeId = it.seatGradeId,
+                            seatGradeName = it.seatGradeName,
                             reservationCount = it.reservationCount,
-                            discountId = it.discountId,
-                            paymentAmount = it.paymentAmount.amount,
+                            discountName = it.discountName,
+                            originalPrice = it.originalPrice.amount,
+                            discountedPrice = it.discountedPrice.amount,
                         )
                     },
             )

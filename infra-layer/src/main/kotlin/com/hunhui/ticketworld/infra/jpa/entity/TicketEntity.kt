@@ -23,7 +23,7 @@ internal class TicketEntity(
     val seatGradeId: UUID,
     @Column(name = "reservationId", nullable = true)
     val reservationId: UUID? = null,
-    @Column(name = "isPaid", nullable = true)
+    @Column(name = "isPaid", nullable = false)
     val isPaid: Boolean,
     @Column(name = "expireTime", nullable = false)
     val expireTime: LocalDateTime,

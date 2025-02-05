@@ -14,12 +14,14 @@ internal class PaymentItemEntity(
     val id: UUID = UUID.randomUUID(),
     @Column(name = "payment_id", nullable = false)
     val paymentId: UUID,
-    @Column(name = "seat_grade_id", nullable = false)
-    val seatGradeId: UUID,
+    @Column(name = "seat_grade_name", nullable = false)
+    val seatGradeName: String,
     @Column(name = "reservation_count", nullable = false)
     val reservationCount: Int,
-    @Column(name = "discount_id", nullable = true)
-    val discountId: UUID?,
-    @Column(name = "payment_amount", nullable = false)
-    val paymentAmount: Long,
+    @Column(name = "discount_name", nullable = false)
+    val discountName: String,
+    @Column(name = "original_price", nullable = false)
+    val originalPrice: Long,
+    @Column(name = "discounted_price", nullable = false)
+    val discountedPrice: Long,
 ) : BaseTimeEntity()
