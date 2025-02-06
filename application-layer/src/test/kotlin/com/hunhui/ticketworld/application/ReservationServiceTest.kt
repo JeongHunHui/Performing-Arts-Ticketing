@@ -273,7 +273,7 @@ class ReservationServiceTest {
                 id = UUID.randomUUID(),
                 roundStartTime = now.plusMinutes(30),
                 reservationStartTime = now.minusMinutes(20),
-                reservationEndTime = now.minusMinutes(10), // 이미 종료된 시간대
+                reservationEndTime = now.minusMinutes(10),
             )
         val performance =
             Performance(

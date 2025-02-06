@@ -23,7 +23,7 @@ class FakeReservationRepository : ReservationRepository {
         seatAreaId: UUID,
     ): List<Ticket> =
         tickets
-            .filter { (id, ticket) ->
+            .filter { (_, ticket) ->
                 ticket.performanceRoundId == performanceRoundId && ticket.seatAreaId == seatAreaId
             }.values
             .toList()
@@ -32,7 +32,7 @@ class FakeReservationRepository : ReservationRepository {
 
     override fun getTicketsByIds(ids: List<UUID>): List<Ticket> =
         tickets
-            .filter { (id, ticket) ->
+            .filter { (id, _) ->
                 id in ids
             }.values
             .toList()

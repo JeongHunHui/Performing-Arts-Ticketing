@@ -25,7 +25,7 @@ class FakeSeatGradeRepository : SeatGradeRepository {
 
     override fun findAllByPerformanceId(performanceId: UUID): List<SeatGrade> =
         seatGrades
-            .filter { (id, seatGrade) ->
+            .filter { (_, seatGrade) ->
                 seatGrade.performanceId ==
                     performanceId
             }.values

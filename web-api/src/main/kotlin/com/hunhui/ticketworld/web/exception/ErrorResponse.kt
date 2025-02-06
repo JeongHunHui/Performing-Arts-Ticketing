@@ -7,11 +7,9 @@ import org.springframework.http.ResponseEntity
 class ErrorResponse(
     errorCode: ErrorCode,
     httpStatus: HttpStatus,
-) : ResponseEntity<ErrorResponse.Body>(Body(errorCode), httpStatus) {
-    class Body(
-        errorCode: ErrorCode,
-    ) {
-        val code: String = errorCode.toString()
-        val message: String = errorCode.message
-    }
+) : ResponseEntity<ErrorResponse.Body>(Body(errorCode.code, errorCode.message), httpStatus) {
+    data class Body(
+        val code: String,
+        val message: String,
+    )
 }
