@@ -12,5 +12,4 @@ enum class ReservationErrorCode(
     CANNOT_TEMP_RESERVE("RE004", "임시 예매할 수 없습니다."),
     CANNOT_CONFIRM_RESERVE("RE005", "예매를 확정할 수 없습니다."),
     NOT_FOUND("RE006", "예매를 찾을 수 없습니다."),
-    EXPIRED("RE007", "만료된 예매입니다."),
 }
