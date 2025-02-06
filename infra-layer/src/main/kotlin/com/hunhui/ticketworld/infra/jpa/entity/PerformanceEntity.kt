@@ -8,6 +8,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import java.util.UUID
@@ -32,17 +33,10 @@ internal class PerformanceEntity(
     @Column(name = "maxReservationCount", nullable = false)
     val maxReservationCount: Int,
     @OneToMany(
-        mappedBy = "performanceId",
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
         fetch = FetchType.LAZY,
     )
-    val seatGrades: List<SeatGradeEntity> = emptyList(),
-    @OneToMany(
-        mappedBy = "performanceId",
-        cascade = [CascadeType.ALL],
-        orphanRemoval = true,
-        fetch = FetchType.LAZY,
-    )
+    @JoinColumn(name = "performance_id")
     val rounds: List<PerformanceRoundEntity> = emptyList(),
 ) : BaseTimeEntity()

@@ -5,6 +5,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import java.util.UUID
@@ -26,10 +27,10 @@ internal class SeatAreaEntity(
     @Column(name = "areaName", nullable = false)
     val areaName: String,
     @OneToMany(
-        mappedBy = "seatAreaId",
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
         fetch = FetchType.LAZY,
     )
+    @JoinColumn(name = "seat_area_id")
     val positions: List<SeatPositionEntity> = emptyList(),
 ) : BaseTimeEntity()

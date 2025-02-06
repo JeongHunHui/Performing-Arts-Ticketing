@@ -9,6 +9,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import java.util.UUID
@@ -28,10 +29,10 @@ internal class PaymentEntity(
     @Column(name = "method", nullable = false)
     val method: PaymentMethod,
     @OneToMany(
-        mappedBy = "paymentId",
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
         fetch = FetchType.LAZY,
     )
+    @JoinColumn(name = "payment_id")
     val items: List<PaymentItemEntity> = listOf(),
 ) : BaseTimeEntity()

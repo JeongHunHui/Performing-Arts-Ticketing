@@ -5,6 +5,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import java.util.UUID
@@ -22,10 +23,10 @@ internal class SeatGradeEntity(
     @Column(name = "performanceId", nullable = false)
     val performanceId: UUID,
     @OneToMany(
-        mappedBy = "seatGradeId",
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
         fetch = FetchType.LAZY,
     )
+    @JoinColumn(name = "seat_grade_id")
     val discounts: List<DiscountEntity> = emptyList(),
 ) : BaseTimeEntity()

@@ -8,6 +8,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import java.math.BigDecimal
@@ -24,11 +25,11 @@ internal class DiscountEntity(
     @Column(name = "name", nullable = false)
     val name: String,
     @OneToMany(
-        mappedBy = "discountId",
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
         fetch = FetchType.LAZY,
     )
+    @JoinColumn(name = "discount_id")
     val discountConditions: List<DiscountConditionEntity> = listOf(),
     @Enumerated(EnumType.STRING)
     @Column(name = "apply_count_type", nullable = false)

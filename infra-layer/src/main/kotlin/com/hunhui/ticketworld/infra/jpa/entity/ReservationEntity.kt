@@ -5,6 +5,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import java.time.LocalDateTime
@@ -22,7 +23,12 @@ internal class ReservationEntity(
     val userId: UUID,
     @Column(name = "paymentId", nullable = true)
     val paymentId: UUID?,
-    @OneToMany(mappedBy = "reservationId", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    @OneToMany(
+        cascade = [CascadeType.ALL],
+        orphanRemoval = true,
+        fetch = FetchType.LAZY,
+    )
+    @JoinColumn(name = "reservation_id")
     val tickets: List<TicketEntity> = mutableListOf(),
     @Column(name = "date", nullable = true)
     val date: LocalDateTime?,
