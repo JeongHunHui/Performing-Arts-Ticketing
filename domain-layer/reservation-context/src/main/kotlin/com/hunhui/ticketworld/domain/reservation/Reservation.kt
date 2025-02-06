@@ -43,9 +43,6 @@ class Reservation(
     val seatGradeIdCountMap: Map<UUID, Int>
         get() = tickets.groupingBy { it.seatGradeId }.eachCount()
 
-    val isExpired: Boolean
-        get() = tickets.any { it.isExpired }
-
     fun confirm(
         userId: UUID,
         paymentId: UUID,

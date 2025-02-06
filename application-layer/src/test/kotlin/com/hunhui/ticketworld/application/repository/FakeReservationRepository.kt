@@ -24,9 +24,7 @@ class FakeReservationRepository : ReservationRepository {
             it.performanceRoundId == performanceRoundId && it.seatAreaId == seatAreaId
         }
 
-    override fun getById(id: UUID): Reservation {
-        TODO("Not yet implemented")
-    }
+    override fun getById(id: UUID): Reservation = reservations.first { it.id == id }
 
     override fun getTicketsByIds(ids: List<UUID>): List<Ticket> = tickets.filter { it.id in ids }
 
