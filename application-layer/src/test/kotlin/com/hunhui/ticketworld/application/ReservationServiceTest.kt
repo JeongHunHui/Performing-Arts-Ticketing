@@ -129,7 +129,7 @@ class ReservationServiceTest {
                 maxReservationCount = 10,
                 rounds = listOf(availableRound),
             )
-        fakePerformanceRepository.addPerformance(performance)
+        fakePerformanceRepository.save(performance)
 
         // 예약할 티켓 생성 (티켓의 회차는 availableRound.id 사용)
         val ticketId1 = UUID.randomUUID()
@@ -208,7 +208,7 @@ class ReservationServiceTest {
                 maxReservationCount = 1,
                 rounds = listOf(availableRound),
             )
-        fakePerformanceRepo.addPerformance(performance)
+        fakePerformanceRepo.save(performance)
 
         // 두 개의 티켓을 예약 요청 (2 > 1)
         val ticketId1 = UUID.randomUUID()
@@ -286,7 +286,7 @@ class ReservationServiceTest {
                 maxReservationCount = 10,
                 rounds = listOf(notAvailableRound),
             )
-        fakePerformanceRepo.addPerformance(performance)
+        fakePerformanceRepo.save(performance)
 
         // 예약할 티켓 생성 (회차는 notAvailableRound.id 사용)
         val ticketId = UUID.randomUUID()

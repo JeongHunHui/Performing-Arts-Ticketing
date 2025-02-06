@@ -5,14 +5,14 @@ import com.hunhui.ticketworld.domain.seatgrade.SeatGradeRepository
 import java.util.UUID
 
 class FakeSeatGradeRepository : SeatGradeRepository {
-    private val seatGrades = mutableListOf<SeatGrade>()
+    private val seatGrades = mutableMapOf<UUID, SeatGrade>()
 
     override fun save(seatGrade: SeatGrade) {
-        seatGrades.add(seatGrade)
+        seatGrades[seatGrade.id] = seatGrade
     }
 
     override fun saveAll(seatGrades: List<SeatGrade>) {
-        this.seatGrades.addAll(seatGrades)
+        seatGrades.forEach { save(it) }
     }
 
     override fun getById(id: UUID): SeatGrade {
@@ -23,5 +23,11 @@ class FakeSeatGradeRepository : SeatGradeRepository {
         TODO("Not yet implemented")
     }
 
-    override fun findAllByPerformanceId(performanceId: UUID): List<SeatGrade> = seatGrades.filter { it.performanceId == performanceId }
+    override fun findAllByPerformanceId(performanceId: UUID): List<SeatGrade> =
+        seatGrades
+            .filter { (id, seatGrade) ->
+                seatGrade.performanceId ==
+                    performanceId
+            }.values
+            .toList()
 }
