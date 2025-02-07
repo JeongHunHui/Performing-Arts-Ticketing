@@ -15,6 +15,7 @@ dependencies {
     implementation(project(":domain-layer:reservation-context"))
     implementation(project(":domain-layer:seat-grade-context"))
     implementation(project(":domain-layer:payment-context"))
+    implementation(project(":domain-layer:kopis-context"))
 }
 
 tasks {
