@@ -79,17 +79,6 @@ data class KopisPerformanceResponse(
         val facilityId: String,
         @JacksonXmlProperty(localName = "dtguidance")
         val dateGuidance: String,
-        @JacksonXmlProperty(localName = "relate")
-        @JacksonXmlCData
-        @JacksonXmlElementWrapper(useWrapping = false)
-        val relatedLinks: List<RelatedLink>?,
-    )
-
-    data class RelatedLink(
-        @JacksonXmlProperty(localName = "relatenm")
-        val name: String,
-        @JacksonXmlProperty(localName = "relateurl")
-        val url: String?,
     )
 
     fun toDomain(): KopisPerformance =
@@ -105,21 +94,15 @@ data class KopisPerformanceResponse(
                 runtime = runtime,
                 ageLimit = ageLimit,
                 enterprise = enterprise,
-                enterpriseP = enterpriseP,
-                enterpriseA = enterpriseA,
-                hostingOrganization = hostingOrganization,
-                sponsoringOrganization = sponsoringOrganization,
                 ticketPriceInfo = ticketPriceInfo,
                 posterUrl = posterUrl,
                 region = region,
                 genre = genre,
-                openRun = openRun,
                 updateDate = updateDate,
                 performanceState = performanceState,
-                styleUrls = styurls,
+                styleUrls = styurls ?: emptyList(),
                 facilityId = facilityId,
                 dateGuidance = dateGuidance,
-                relatedLinks = relatedLinks?.map { KopisPerformance.RelatedLink(it.name, it.url) },
             )
         }
 }

@@ -13,4 +13,6 @@ interface KopisRepository {
     ): List<String>
 
     fun getPerformanceById(id: String): KopisPerformance
+
+    fun getPerformanceFacilityById(id: String): KopisPerformanceFacility
 }

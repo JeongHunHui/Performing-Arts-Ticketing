@@ -1,8 +1,10 @@
 package com.hunhui.ticketworld.infra.http
 
 import com.hunhui.ticketworld.domain.kopis.KopisPerformance
+import com.hunhui.ticketworld.domain.kopis.KopisPerformanceFacility
 import com.hunhui.ticketworld.domain.kopis.KopisPerformanceGenre
 import com.hunhui.ticketworld.domain.kopis.KopisRepository
+import com.hunhui.ticketworld.infra.http.dto.response.KopisPerformanceFacilityResponse
 import com.hunhui.ticketworld.infra.http.dto.response.KopisPerformanceIdListResponse
 import com.hunhui.ticketworld.infra.http.dto.response.KopisPerformanceResponse
 import org.springframework.stereotype.Repository
@@ -42,5 +44,13 @@ class KopisRepositoryImpl(
                 middleUrl = "/pblprfr/$id",
                 queryParams = emptyMap(),
                 KopisPerformanceResponse::class.java,
+            ).toDomain()
+
+    override fun getPerformanceFacilityById(id: String): KopisPerformanceFacility =
+        kopisApiClient
+            .request(
+                middleUrl = "/prfplc/$id",
+                queryParams = emptyMap(),
+                KopisPerformanceFacilityResponse::class.java,
             ).toDomain()
 }

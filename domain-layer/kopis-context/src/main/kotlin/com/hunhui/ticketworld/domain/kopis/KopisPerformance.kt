@@ -9,29 +9,22 @@ data class KopisPerformance(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val location: String,
+    /** 출연진 */
     val cast: String?,
+    /** 제작진 */
     val crew: String?,
     val runtime: String?,
     val ageLimit: String?,
+    /** 기획제작사 */
     val enterprise: String?,
-    val enterpriseP: String?,
-    val enterpriseA: String?,
-    val hostingOrganization: String?,
-    val sponsoringOrganization: String?,
     val ticketPriceInfo: String,
     val posterUrl: String?,
+    /** 지역 */
     val region: String,
     val genre: KopisPerformanceGenre,
-    val openRun: Boolean,
     val updateDate: LocalDateTime,
     val performanceState: KopisPerformanceStatus,
-    val styleUrls: List<String>?,
+    val styleUrls: List<String>,
     val facilityId: String,
     val dateGuidance: String,
-    val relatedLinks: List<RelatedLink>?,
-) {
-    data class RelatedLink(
-        val name: String,
-        val url: String?,
-    )
-}
+)
