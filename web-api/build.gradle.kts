@@ -9,6 +9,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation(project(":domain-layer:kopis-context"))
 
     // Swagger
     implementation("org.springdoc:springdoc-openapi:2.7.0")

@@ -3,6 +3,7 @@ spring:
         name: web-api
     profiles.include:
         - infra
+        - infra-secret
     api:
         prefix: "/api"
         version: "v1"

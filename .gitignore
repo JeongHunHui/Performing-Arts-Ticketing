@@ -1,5 +1,7 @@
 .env
 
+**/application*-secret.yml
+
 test/HELP.md
 .gradle
 build/
