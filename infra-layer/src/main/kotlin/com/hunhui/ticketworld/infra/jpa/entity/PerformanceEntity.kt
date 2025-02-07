@@ -24,13 +24,13 @@ internal class PerformanceEntity(
     @Enumerated(EnumType.STRING)
     @Column(name = "genre", nullable = false)
     val genre: PerformanceGenre,
-    @Column(name = "imageUrl", nullable = false)
+    @Column(name = "image_url", nullable = false)
     val imageUrl: String,
     @Column(name = "location", nullable = false)
     val location: String,
     @Column(name = "description", nullable = false)
     val description: String,
-    @Column(name = "maxReservationCount", nullable = false)
+    @Column(name = "max_reservation_count", nullable = false)
     val maxReservationCount: Int,
     @OneToMany(
         cascade = [CascadeType.ALL],

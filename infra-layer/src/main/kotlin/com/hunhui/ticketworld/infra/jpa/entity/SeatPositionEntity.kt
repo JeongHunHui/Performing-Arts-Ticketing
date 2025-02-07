@@ -12,9 +12,9 @@ internal class SeatPositionEntity(
     @Id
     @Column(name = "id", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
-    @Column(name = "seatAreaId", nullable = false)
+    @Column(name = "seat_area_id", nullable = false)
     val seatAreaId: UUID,
-    @Column(name = "seatGradeId", nullable = false)
+    @Column(name = "seat_grade_id", nullable = false)
     val seatGradeId: UUID,
     @Column(name = "number", nullable = false)
     val number: String,

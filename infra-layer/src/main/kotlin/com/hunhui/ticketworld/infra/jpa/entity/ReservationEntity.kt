@@ -17,11 +17,11 @@ internal class ReservationEntity(
     @Id
     @Column(name = "id", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
-    @Column(name = "performanceId", nullable = false)
+    @Column(name = "performance_id", nullable = false)
     val performanceId: UUID,
-    @Column(name = "userId", nullable = false)
+    @Column(name = "user_id", nullable = false)
     val userId: UUID,
-    @Column(name = "paymentId", nullable = true)
+    @Column(name = "payment_id", nullable = true)
     val paymentId: UUID?,
     @OneToMany(
         cascade = [CascadeType.ALL],

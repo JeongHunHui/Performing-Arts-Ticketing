@@ -13,18 +13,18 @@ internal class TicketEntity(
     @Id
     @Column(name = "id", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
-    @Column(name = "performanceRoundId", nullable = false)
+    @Column(name = "performance_round_id", nullable = false)
     val performanceRoundId: UUID,
-    @Column(name = "seatAreaId", nullable = false)
+    @Column(name = "seat_area_id", nullable = false)
     val seatAreaId: UUID,
-    @Column(name = "seatPositionId", nullable = false)
+    @Column(name = "seat_position_id", nullable = false)
     val seatPositionId: UUID,
-    @Column(name = "seatGradeId", nullable = false)
+    @Column(name = "seat_grade_id", nullable = false)
     val seatGradeId: UUID,
-    @Column(name = "reservationId", nullable = true)
+    @Column(name = "reservation_id", nullable = true)
     val reservationId: UUID? = null,
-    @Column(name = "isPaid", nullable = false)
+    @Column(name = "is_paid", nullable = false)
     val isPaid: Boolean,
-    @Column(name = "expireTime", nullable = false)
+    @Column(name = "expire_time", nullable = false)
     val expireTime: LocalDateTime,
 ) : BaseTimeEntity()

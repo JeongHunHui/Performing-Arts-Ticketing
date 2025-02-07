@@ -16,15 +16,15 @@ internal class SeatAreaEntity(
     @Id
     @Column(name = "id", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
-    @Column(name = "performanceId", nullable = false)
+    @Column(name = "performance_id", nullable = false)
     val performanceId: UUID,
     @Column(name = "width", nullable = false)
     val width: Int,
     @Column(name = "height", nullable = false)
     val height: Int,
-    @Column(name = "floorName", nullable = false)
+    @Column(name = "floor_name", nullable = false)
     val floorName: String,
-    @Column(name = "areaName", nullable = false)
+    @Column(name = "area_name", nullable = false)
     val areaName: String,
     @OneToMany(
         cascade = [CascadeType.ALL],

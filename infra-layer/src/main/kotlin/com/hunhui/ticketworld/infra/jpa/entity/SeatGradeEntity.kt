@@ -20,7 +20,7 @@ internal class SeatGradeEntity(
     val name: String,
     @Column(name = "price", nullable = false)
     val price: Long,
-    @Column(name = "performanceId", nullable = false)
+    @Column(name = "performance_id", nullable = false)
     val performanceId: UUID,
     @OneToMany(
         cascade = [CascadeType.ALL],

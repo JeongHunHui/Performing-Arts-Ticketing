@@ -12,12 +12,12 @@ import java.time.LocalDateTime
 @EntityListeners(AuditingEntityListener::class)
 internal abstract class BaseTimeEntity {
     @CreatedDate
-    @Column(name = "createdAt", updatable = false, nullable = false)
+    @Column(name = "created_at", updatable = false, nullable = false)
     var createdAt: LocalDateTime? = null
         protected set
 
     @LastModifiedDate
-    @Column(name = "updatedAt", nullable = false)
+    @Column(name = "updated_at", nullable = false)
     var updatedAt: LocalDateTime? = null
         protected set
 }
