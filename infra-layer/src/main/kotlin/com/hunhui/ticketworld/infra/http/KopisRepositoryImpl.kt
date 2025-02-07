@@ -2,17 +2,17 @@ package com.hunhui.ticketworld.infra.http
 
 import com.hunhui.ticketworld.domain.kopis.KopisPerformance
 import com.hunhui.ticketworld.domain.kopis.KopisPerformanceGenre
-import com.hunhui.ticketworld.domain.kopis.KopisPerformanceRepository
+import com.hunhui.ticketworld.domain.kopis.KopisRepository
 import com.hunhui.ticketworld.infra.http.dto.response.KopisPerformanceIdListResponse
 import com.hunhui.ticketworld.infra.http.dto.response.KopisPerformanceResponse
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
 
 @Repository
-class KopisPerformanceRepositoryImpl(
+class KopisRepositoryImpl(
     private val kopisApiClient: KopisApiClient,
-) : KopisPerformanceRepository {
-    override fun findIds(
+) : KopisRepository {
+    override fun findPerformanceIds(
         currentPage: Int,
         rows: Int,
         startDate: LocalDate,
@@ -36,7 +36,7 @@ class KopisPerformanceRepositoryImpl(
             ).ids
             .map { it.id }
 
-    override fun getById(id: String): KopisPerformance =
+    override fun getPerformanceById(id: String): KopisPerformance =
         kopisApiClient
             .request(
                 middleUrl = "/pblprfr/$id",

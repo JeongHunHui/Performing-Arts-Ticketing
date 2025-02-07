@@ -2,8 +2,8 @@ package com.hunhui.ticketworld.domain.kopis
 
 import java.time.LocalDate
 
-interface KopisPerformanceRepository {
-    fun findIds(
+interface KopisRepository {
+    fun findPerformanceIds(
         currentPage: Int,
         rows: Int,
         startDate: LocalDate,
@@ -12,5 +12,5 @@ interface KopisPerformanceRepository {
         kopisPerformanceGenre: KopisPerformanceGenre,
     ): List<String>
 
-    fun getById(id: String): KopisPerformance
+    fun getPerformanceById(id: String): KopisPerformance
 }
