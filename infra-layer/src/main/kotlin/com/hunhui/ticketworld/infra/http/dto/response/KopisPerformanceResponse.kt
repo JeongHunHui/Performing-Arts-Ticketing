@@ -8,10 +8,14 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.hunhui.ticketworld.domain.kopis.KopisPerformance
 import com.hunhui.ticketworld.domain.kopis.KopisPerformanceGenre
 import com.hunhui.ticketworld.domain.kopis.KopisPerformanceStatus
+import com.hunhui.ticketworld.domain.kopis.PerformanceSchedule
+import com.hunhui.ticketworld.domain.kopis.SeatGradeInfo
 import com.hunhui.ticketworld.infra.http.deserializer.BooleanYNDeserializer
 import com.hunhui.ticketworld.infra.http.deserializer.GenreDeserializer
 import com.hunhui.ticketworld.infra.http.deserializer.LocalDateDeserializer
 import com.hunhui.ticketworld.infra.http.deserializer.LocalDateTimeDeserializer
+import com.hunhui.ticketworld.infra.http.deserializer.PerformanceSchedulesDeserializer
+import com.hunhui.ticketworld.infra.http.deserializer.SeatGradeInfoListDeserializer
 import com.hunhui.ticketworld.infra.http.deserializer.StatusDeserializer
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -26,7 +30,7 @@ data class KopisPerformanceResponse(
         @JacksonXmlProperty(localName = "mt20id")
         val id: String,
         @JacksonXmlProperty(localName = "prfnm")
-        val name: String,
+        val title: String,
         @JacksonXmlProperty(localName = "prfpdfrom")
         @JsonDeserialize(using = LocalDateDeserializer::class)
         val startDate: LocalDate,
@@ -54,7 +58,8 @@ data class KopisPerformanceResponse(
         @JacksonXmlProperty(localName = "entrpsnmS")
         val sponsoringOrganization: String?,
         @JacksonXmlProperty(localName = "pcseguidance")
-        val ticketPriceInfo: String,
+        @JsonDeserialize(using = SeatGradeInfoListDeserializer::class)
+        val seatGradeInfos: List<SeatGradeInfo>,
         @JacksonXmlProperty(localName = "poster")
         val posterUrl: String?,
         @JacksonXmlProperty(localName = "area")
@@ -78,14 +83,15 @@ data class KopisPerformanceResponse(
         @JacksonXmlProperty(localName = "mt10id")
         val facilityId: String,
         @JacksonXmlProperty(localName = "dtguidance")
-        val dateGuidance: String,
+        @JsonDeserialize(using = PerformanceSchedulesDeserializer::class)
+        val schedules: List<PerformanceSchedule>,
     )
 
     fun toDomain(): KopisPerformance =
         with(db) {
             KopisPerformance(
                 id = id,
-                name = name,
+                title = title,
                 startDate = startDate,
                 endDate = endDate,
                 location = location,
@@ -94,15 +100,15 @@ data class KopisPerformanceResponse(
                 runtime = runtime,
                 ageLimit = ageLimit,
                 enterprise = enterprise,
-                ticketPriceInfo = ticketPriceInfo,
+                seatGradeInfos = seatGradeInfos,
                 posterUrl = posterUrl,
                 region = region,
                 genre = genre,
                 updateDate = updateDate,
                 performanceState = performanceState,
-                styleUrls = styurls ?: emptyList(),
+                descriptionImageUrls = styurls ?: emptyList(),
                 facilityId = facilityId,
-                dateGuidance = dateGuidance,
+                schedules = schedules,
             )
         }
 }

@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 
 data class KopisPerformance(
     val id: String,
-    val name: String,
+    val title: String,
     val startDate: LocalDate,
     val endDate: LocalDate,
     val location: String,
@@ -17,14 +17,14 @@ data class KopisPerformance(
     val ageLimit: String?,
     /** 기획제작사 */
     val enterprise: String?,
-    val ticketPriceInfo: String,
+    val seatGradeInfos: List<SeatGradeInfo>,
     val posterUrl: String?,
     /** 지역 */
     val region: String,
     val genre: KopisPerformanceGenre,
     val updateDate: LocalDateTime,
     val performanceState: KopisPerformanceStatus,
-    val styleUrls: List<String>,
+    val descriptionImageUrls: List<String>,
     val facilityId: String,
-    val dateGuidance: String,
+    val schedules: List<PerformanceSchedule>,
 )

@@ -2,6 +2,7 @@ package com.hunhui.ticketworld.infra.jpa.repository
 
 import com.hunhui.ticketworld.common.error.BusinessException
 import com.hunhui.ticketworld.domain.performance.Performance
+import com.hunhui.ticketworld.domain.performance.PerformanceInfo
 import com.hunhui.ticketworld.domain.performance.PerformanceRepository
 import com.hunhui.ticketworld.domain.performance.PerformanceRound
 import com.hunhui.ticketworld.domain.performance.exception.PerformanceErrorCode.NOT_FOUND
@@ -17,6 +18,8 @@ internal class PerformanceRepositoryImpl(
     private val performanceJpaRepository: PerformanceJpaRepository,
 ) : PerformanceRepository {
     override fun getById(id: UUID): Performance = performanceJpaRepository.findByIdOrNull(id)?.domain ?: throw BusinessException(NOT_FOUND)
+
+    override fun findByKopisId(kopisId: String): Performance? = performanceJpaRepository.findByKopisId(kopisId)?.domain
 
     override fun findAll(
         page: Int,
@@ -38,11 +41,22 @@ internal class PerformanceRepositoryImpl(
         get() =
             Performance(
                 id = id,
-                title = title,
+                info =
+                    PerformanceInfo(
+                        kopisId = kopisId,
+                        title = title,
+                        genre = genre,
+                        posterUrl = posterUrl,
+                        kopisFacilityId = kopisFacilityId,
+                        location = location,
+                        locationAddress = locationAddress,
+                        cast = cast,
+                        crew = crew,
+                        runtime = runtime,
+                        ageLimit = ageLimit,
+                        descriptionImageUrls = descriptionImageUrls.split('|'),
+                    ),
                 description = description,
-                genre = genre,
-                imageUrl = imageUrl,
-                location = location,
                 maxReservationCount = maxReservationCount,
                 rounds = rounds.map { it.domain },
             )
@@ -60,11 +74,19 @@ internal class PerformanceRepositoryImpl(
         get() =
             PerformanceEntity(
                 id = id,
-                title = title,
+                title = info.title,
+                genre = info.genre,
+                posterUrl = info.posterUrl,
+                location = info.location,
+                kopisId = info.kopisId,
+                kopisFacilityId = info.kopisFacilityId,
+                locationAddress = info.locationAddress,
+                cast = info.cast,
+                crew = info.crew,
+                runtime = info.runtime,
+                ageLimit = info.ageLimit,
+                descriptionImageUrls = info.descriptionImageUrls.joinToString("|"),
                 description = description,
-                genre = genre,
-                imageUrl = imageUrl,
-                location = location,
                 maxReservationCount = maxReservationCount,
                 rounds =
                     rounds.map {

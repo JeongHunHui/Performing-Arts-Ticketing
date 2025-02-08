@@ -1,10 +1,12 @@
 package com.hunhui.ticketworld.infra.http.dto.response
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.hunhui.ticketworld.domain.kopis.KopisPerformanceFacility
+import com.hunhui.ticketworld.infra.http.deserializer.CommaNumberDeserializer
 
 data class KopisPerformanceFacilityResponse(
     @JacksonXmlElementWrapper(useWrapping = false)
@@ -34,10 +36,13 @@ data class KopisPerformanceFacilityResponse(
     ) {
         @JsonIgnoreProperties(ignoreUnknown = true)
         data class PerformancePlaceResponse(
+            @JacksonXmlProperty(localName = "mt13id")
+            val id: String,
             @JacksonXmlProperty(localName = "prfplcnm")
             val name: String,
             @JacksonXmlProperty(localName = "seatscale")
-            val seatScale: String,
+            @JsonDeserialize(using = CommaNumberDeserializer::class)
+            val seatScale: Int?,
         )
     }
 
@@ -49,7 +54,8 @@ data class KopisPerformanceFacilityResponse(
             places =
                 facility.mt13s?.map { place ->
                     KopisPerformanceFacility.Place(
-                        roomName = place.name,
+                        id = place.id,
+                        name = place.name,
                         seatScale = place.seatScale,
                     )
                 } ?: emptyList(),

@@ -13,6 +13,7 @@ import java.time.LocalDate
 @Repository
 class KopisRepositoryImpl(
     private val kopisApiClient: KopisApiClient,
+    private val kopisPerformanceFacilityRepository: KopisPerformanceFacilityRepository,
 ) : KopisRepository {
     override fun findPerformanceIds(
         currentPage: Int,
@@ -36,7 +37,7 @@ class KopisRepositoryImpl(
                     ),
                 KopisPerformanceIdListResponse::class.java,
             ).ids
-            .map { it.id }
+            ?.map { it.id } ?: emptyList()
 
     override fun getPerformanceById(id: String): KopisPerformance =
         kopisApiClient
@@ -46,7 +47,14 @@ class KopisRepositoryImpl(
                 KopisPerformanceResponse::class.java,
             ).toDomain()
 
-    override fun getPerformanceFacilityById(id: String): KopisPerformanceFacility =
+    override fun getPerformanceFacilityById(id: String): KopisPerformanceFacility {
+        val kopisPerformanceFacility = kopisPerformanceFacilityRepository.findById(id)
+        return kopisPerformanceFacility ?: fetchPerformanceFacility(id).also {
+            kopisPerformanceFacilityRepository.save(it)
+        }
+    }
+
+    private fun fetchPerformanceFacility(id: String): KopisPerformanceFacility =
         kopisApiClient
             .request(
                 middleUrl = "/prfplc/$id",

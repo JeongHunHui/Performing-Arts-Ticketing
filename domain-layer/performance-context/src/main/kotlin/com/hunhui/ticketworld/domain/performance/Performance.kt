@@ -6,12 +6,9 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
-class Performance(
+data class Performance(
     val id: UUID,
-    val title: String,
-    val genre: PerformanceGenre,
-    val imageUrl: String,
-    val location: String,
+    val info: PerformanceInfo,
     val description: String,
     val maxReservationCount: Int,
     val rounds: List<PerformanceRound>,
@@ -22,20 +19,14 @@ class Performance(
 
     companion object {
         fun create(
-            title: String,
-            genre: PerformanceGenre,
-            imageUrl: String,
-            location: String,
+            performanceInfo: PerformanceInfo,
             description: String,
             maxReservationCount: Int,
             rounds: List<PerformanceRound>,
         ): Performance =
             Performance(
                 id = UUID.randomUUID(),
-                title = title,
-                genre = genre,
-                imageUrl = imageUrl,
-                location = location,
+                info = performanceInfo,
                 description = description,
                 maxReservationCount = maxReservationCount,
                 rounds = rounds,

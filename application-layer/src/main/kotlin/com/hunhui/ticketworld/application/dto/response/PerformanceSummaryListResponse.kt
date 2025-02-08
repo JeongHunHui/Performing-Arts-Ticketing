@@ -14,11 +14,11 @@ data class PerformanceSummaryListResponse(
                     performances.map {
                         PerformanceSummaryResponse(
                             id = it.id,
-                            title = it.title,
+                            title = it.info.title,
                             startDate = it.startDate,
                             finishDate = it.finishDate,
-                            imageUrl = it.imageUrl,
-                            location = it.location,
+                            posterUrl = it.info.posterUrl,
+                            location = it.info.location,
                         )
                     },
             )
@@ -29,7 +29,7 @@ data class PerformanceSummaryListResponse(
         val title: String,
         val startDate: LocalDate,
         val finishDate: LocalDate,
-        val imageUrl: String,
+        val posterUrl: String?,
         val location: String,
     )
 }

@@ -14,6 +14,7 @@ import com.hunhui.ticketworld.domain.payment.PaymentStatus
 import com.hunhui.ticketworld.domain.payment.exception.PaymentErrorCode
 import com.hunhui.ticketworld.domain.performance.Performance
 import com.hunhui.ticketworld.domain.performance.PerformanceGenre
+import com.hunhui.ticketworld.domain.performance.PerformanceInfo
 import com.hunhui.ticketworld.domain.performance.PerformanceRound
 import com.hunhui.ticketworld.domain.performance.exception.PerformanceErrorCode.ROUND_NOT_AVAILABLE
 import com.hunhui.ticketworld.domain.reservation.Reservation
@@ -215,10 +216,13 @@ class PaymentServiceTest {
         val performance =
             Performance(
                 id = performanceId,
-                title = "Test Performance",
-                genre = PerformanceGenre.CONCERT,
-                imageUrl = "test.png",
-                location = "Test Hall",
+                info =
+                    PerformanceInfo(
+                        title = "Test Performance",
+                        genre = PerformanceGenre.CONCERT,
+                        posterUrl = "test.png",
+                        location = "Test Hall",
+                    ),
                 description = "Test Description",
                 maxReservationCount = 100,
                 rounds = listOf(availableRound),
@@ -299,10 +303,13 @@ class PaymentServiceTest {
         val performance =
             Performance(
                 id = performanceId,
-                title = "Test Performance",
-                genre = PerformanceGenre.CONCERT,
-                imageUrl = "test.png",
-                location = "Test Hall",
+                info =
+                    PerformanceInfo(
+                        title = "Test Performance",
+                        genre = PerformanceGenre.CONCERT,
+                        posterUrl = "test.png",
+                        location = "Test Hall",
+                    ),
                 description = "Test Description",
                 maxReservationCount = 100,
                 rounds = listOf(notAvailableRound),

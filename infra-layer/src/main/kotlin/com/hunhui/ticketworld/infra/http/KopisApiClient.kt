@@ -34,7 +34,6 @@ class KopisApiClient(
         val url = "$baseUrl$middleUrl?service=$serviceKey${queryParams.toString}"
         try {
             val response: ResponseEntity<String> = restTemplate.getForEntity(url)
-            logger.info(response.body)
             if (!response.statusCode.is2xxSuccessful || response.body == null) {
                 logger.error("Failed to request Kopis API\nurl: $url\nresponse: $response")
                 throw BusinessException(KopisErrorCode.REQUEST_FAILED)
@@ -43,8 +42,8 @@ class KopisApiClient(
             // XML 응답 파싱하여 returncode 확인
             val parsedResponse = xmlMapper.readValue(response.body!!, KopisApiErrorResponse::class.java)
 
-            with(parsedResponse.dbs.first()) {
-                if (returnCode != null) {
+            with(parsedResponse.dbs?.first()) {
+                if (this != null && returnCode != null) {
                     logger.error("Failed to request Kopis API\nurl: $url\nresponse: $this)")
                     throw BusinessException(KopisErrorCode.REQUEST_FAILED)
                 }
@@ -85,7 +84,7 @@ class KopisApiClient(
     data class KopisApiErrorResponse(
         @JacksonXmlElementWrapper(useWrapping = false)
         @JacksonXmlProperty(localName = "db")
-        val dbs: List<Db>,
+        val dbs: List<Db>?,
     ) {
         @JsonIgnoreProperties(ignoreUnknown = true)
         data class Db(

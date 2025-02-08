@@ -8,6 +8,7 @@ import com.hunhui.ticketworld.application.repository.FakeReservationRepository
 import com.hunhui.ticketworld.common.error.AssertUtil.assertErrorCode
 import com.hunhui.ticketworld.domain.performance.Performance
 import com.hunhui.ticketworld.domain.performance.PerformanceGenre
+import com.hunhui.ticketworld.domain.performance.PerformanceInfo
 import com.hunhui.ticketworld.domain.performance.PerformanceRound
 import com.hunhui.ticketworld.domain.performance.exception.PerformanceErrorCode
 import com.hunhui.ticketworld.domain.reservation.Ticket
@@ -121,10 +122,13 @@ class ReservationServiceTest {
         val performance =
             Performance(
                 id = UUID.randomUUID(),
-                title = "테스트 공연",
-                genre = PerformanceGenre.CONCERT,
-                imageUrl = "http://test.com/image.png",
-                location = "Test Hall",
+                info =
+                    PerformanceInfo(
+                        title = "테스트 공연",
+                        genre = PerformanceGenre.CONCERT,
+                        posterUrl = "http://test.com/image.png",
+                        location = "Test Hall",
+                    ),
                 description = "테스트 설명",
                 maxReservationCount = 10,
                 rounds = listOf(availableRound),
@@ -200,10 +204,13 @@ class ReservationServiceTest {
         val performance =
             Performance(
                 id = UUID.randomUUID(),
-                title = "테스트 공연",
-                genre = PerformanceGenre.CONCERT,
-                imageUrl = "http://test.com/image.png",
-                location = "Test Hall",
+                info =
+                    PerformanceInfo(
+                        title = "테스트 공연",
+                        genre = PerformanceGenre.CONCERT,
+                        posterUrl = "http://test.com/image.png",
+                        location = "Test Hall",
+                    ),
                 description = "테스트 설명",
                 maxReservationCount = 1,
                 rounds = listOf(availableRound),
@@ -278,10 +285,13 @@ class ReservationServiceTest {
         val performance =
             Performance(
                 id = UUID.randomUUID(),
-                title = "테스트 공연",
-                genre = PerformanceGenre.CONCERT,
-                imageUrl = "http://test.com/image.png",
-                location = "Test Hall",
+                info =
+                    PerformanceInfo(
+                        title = "테스트 공연",
+                        genre = PerformanceGenre.CONCERT,
+                        posterUrl = "http://test.com/image.png",
+                        location = "Test Hall",
+                    ),
                 description = "테스트 설명",
                 maxReservationCount = 10,
                 rounds = listOf(notAvailableRound),

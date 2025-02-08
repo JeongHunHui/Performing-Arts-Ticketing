@@ -2,6 +2,7 @@ package com.hunhui.ticketworld.application.dto.request
 
 import com.hunhui.ticketworld.domain.performance.Performance
 import com.hunhui.ticketworld.domain.performance.PerformanceGenre
+import com.hunhui.ticketworld.domain.performance.PerformanceInfo
 import com.hunhui.ticketworld.domain.performance.PerformanceRound
 import com.hunhui.ticketworld.domain.seatarea.SeatArea
 import com.hunhui.ticketworld.domain.seatarea.SeatPosition
@@ -12,7 +13,7 @@ import java.util.UUID
 data class PerformanceCreateRequest(
     val title: String,
     val genre: PerformanceGenre,
-    val imageUrl: String,
+    val posterUrl: String,
     val location: String,
     val description: String,
     val maxReservationCount: Int,
@@ -29,10 +30,13 @@ data class PerformanceCreateRequest(
 
     private fun getPerformance(): Performance =
         Performance.create(
-            title = title,
-            genre = genre,
-            imageUrl = imageUrl,
-            location = location,
+            performanceInfo =
+                PerformanceInfo(
+                    title = title,
+                    genre = genre,
+                    posterUrl = posterUrl,
+                    location = location,
+                ),
             description = description,
             maxReservationCount = maxReservationCount,
             rounds =

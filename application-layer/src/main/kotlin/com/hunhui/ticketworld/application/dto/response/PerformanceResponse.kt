@@ -13,7 +13,7 @@ data class PerformanceResponse(
     val startDate: LocalDate,
     val finishDate: LocalDate,
     val genre: PerformanceGenre,
-    val imageUrl: String,
+    val posterUrl: String?,
     val location: String,
     val description: String,
     val minimumReservationStartTime: LocalDateTime,
@@ -27,12 +27,12 @@ data class PerformanceResponse(
         ): PerformanceResponse =
             PerformanceResponse(
                 id = performance.id,
-                title = performance.title,
+                title = performance.info.title,
                 startDate = performance.startDate,
                 finishDate = performance.finishDate,
-                genre = performance.genre,
-                imageUrl = performance.imageUrl,
-                location = performance.location,
+                genre = performance.info.genre,
+                posterUrl = performance.info.posterUrl,
+                location = performance.info.location,
                 description = performance.description,
                 minimumReservationStartTime = performance.minimumReservationStartTime,
                 seatGrades =

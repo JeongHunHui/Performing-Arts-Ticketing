@@ -6,7 +6,7 @@ object PerformanceFixtureFactory {
     fun createValidPerformance(
         title: String = "테스트 공연",
         genre: PerformanceGenre = PerformanceGenre.CONCERT,
-        imageUrl: String = "test_image.png",
+        posterUrl: String = "test_image.png",
         location: String = "테스트 장소",
         description: String = "테스트 공연 설명",
         maxReservationCount: Int = 5,
@@ -21,10 +21,13 @@ object PerformanceFixtureFactory {
             ),
     ): Performance =
         Performance.create(
-            title = title,
-            genre = genre,
-            imageUrl = imageUrl,
-            location = location,
+            performanceInfo =
+                PerformanceInfo(
+                    title = title,
+                    genre = genre,
+                    posterUrl = posterUrl,
+                    location = location,
+                ),
             description = description,
             maxReservationCount = maxReservationCount,
             rounds = rounds,

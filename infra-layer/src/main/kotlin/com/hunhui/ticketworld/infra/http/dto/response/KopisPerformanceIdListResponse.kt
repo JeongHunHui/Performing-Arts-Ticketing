@@ -7,7 +7,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 data class KopisPerformanceIdListResponse(
     @JacksonXmlElementWrapper(useWrapping = false)
     @JacksonXmlProperty(localName = "db")
-    val ids: List<KopisPerformanceIdResponse>,
+    val ids: List<KopisPerformanceIdResponse>?,
 ) {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class KopisPerformanceIdResponse(

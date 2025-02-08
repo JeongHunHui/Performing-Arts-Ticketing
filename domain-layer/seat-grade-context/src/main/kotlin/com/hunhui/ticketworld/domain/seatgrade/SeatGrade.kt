@@ -3,7 +3,7 @@ package com.hunhui.ticketworld.domain.seatgrade
 import com.hunhui.ticketworld.common.vo.Money
 import java.util.UUID
 
-class SeatGrade(
+data class SeatGrade(
     val id: UUID,
     val performanceId: UUID,
     val name: String,

@@ -6,7 +6,7 @@ import com.hunhui.ticketworld.domain.performance.exception.PerformanceErrorCode.
 import java.time.LocalDateTime
 import java.util.UUID
 
-class PerformanceRound(
+data class PerformanceRound(
     val id: UUID,
     val roundStartTime: LocalDateTime,
     val reservationStartTime: LocalDateTime,
