@@ -153,7 +153,7 @@ class DummyDataService(
         val ticketsByRound: Map<UUID, List<Ticket>> = tickets.groupBy { it.performanceRoundId }
 
         ticketsByRound.forEach { (_, roundTickets) ->
-            // 각 회차 그룹에서 70%만 예약 대상으로 처리
+            // 각 회차 그룹에서 70%만 예매 대상으로 처리
             val totalTicketsToReserve = (roundTickets.size * 0.7).toInt()
             val remainingTickets = roundTickets.take(totalTicketsToReserve).toMutableList()
             while (remainingTickets.isNotEmpty()) {
@@ -192,7 +192,7 @@ class DummyDataService(
                         discountedPrice = discountedPrice,
                     )
                 }
-                // 예약 확정 및 결제 완료 처리
+                // 예매 확정 및 결제 완료 처리
                 reservation.confirm(userId, payment.id)
                 payment.complete()
 

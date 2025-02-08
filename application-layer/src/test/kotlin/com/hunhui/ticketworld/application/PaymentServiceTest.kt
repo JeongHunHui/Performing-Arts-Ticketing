@@ -83,7 +83,7 @@ class PaymentServiceTest {
                 paymentRepository = paymentRepository,
             )
 
-        // PaymentStartRequest 작성: 예약된 좌석 등급에 대해 2매 결제 요청, 할인 id는 null
+        // PaymentStartRequest 작성: 예매된 좌석 등급에 대해 2매 결제 요청, 할인 id는 null
         val paymentItemRequest =
             PaymentStartRequest.PaymentItemRequest(
                 seatGradeId = seatGradeId,
@@ -190,7 +190,7 @@ class PaymentServiceTest {
         }
     }
 
-    // 성공 케이스: 예약, 결제, Performance(예약 회차가 예약 가능) 모두 정상인 경우
+    // 성공 케이스: 예매, 결제, Performance(예매 회차가 예매 가능) 모두 정상인 경우
     @Test
     fun `정상 결제 완료 동작`() {
         // Arrange
@@ -202,7 +202,7 @@ class PaymentServiceTest {
         val seatAreaId = UUID.randomUUID()
         val seatPositionId = UUID.randomUUID()
 
-        // 현재 시각 기준 예약 가능한 회차 생성
+        // 현재 시각 기준 예매 가능한 회차 생성
         val now = LocalDateTime.now()
         val availableRound =
             PerformanceRound(
@@ -212,7 +212,7 @@ class PaymentServiceTest {
                 reservationEndTime = now.plusMinutes(5),
             )
 
-        // Performance 생성 (예약 가능한 회차 포함)
+        // Performance 생성 (예매 가능한 회차 포함)
         val performance =
             Performance(
                 id = performanceId,
@@ -272,15 +272,15 @@ class PaymentServiceTest {
         // PaymentRepository에 저장된 Payment의 상태가 COMPLETED여야 함
         val completedPayment = paymentRepository.getById(payment.id)
         assertEquals(PaymentStatus.COMPLETED, completedPayment.status)
-        // Reservation은 확인(예약 확정 처리 후 Reservation.confirm()이 호출됨)
+        // Reservation은 확인(예매 확정 처리 후 Reservation.confirm()이 호출됨)
         val confirmedReservation = reservationRepository.getById(reservation.id)
-        // 실제 도메인 객체에 따라 예약 확정 여부를 확인할 수 있는 프로퍼티가 있다면 검증(여기서는 confirm() 호출 후 동일 객체 반환으로 가정)
+        // 실제 도메인 객체에 따라 예매 확정 여부를 확인할 수 있는 프로퍼티가 있다면 검증(여기서는 confirm() 호출 후 동일 객체 반환으로 가정)
         assertEquals(confirmedReservation.paymentId, payment.id)
     }
 
-    // 실패 케이스 1: Performance의 예약 가능 회차가 아님 (ROUND_NOT_AVAILABLE)
+    // 실패 케이스 1: Performance의 예매 가능 회차가 아님 (ROUND_NOT_AVAILABLE)
     @Test
-    fun `예약 회차가 예약 가능하지 않으면 ROUND_NOT_AVAILABLE 예외 발생`() {
+    fun `예매 회차가 예매 가능하지 않으면 ROUND_NOT_AVAILABLE 예외 발생`() {
         // Arrange
         val userId = UUID.randomUUID()
         val performanceId = UUID.randomUUID()
@@ -289,7 +289,7 @@ class PaymentServiceTest {
         val seatAreaId = UUID.randomUUID()
         val seatPositionId = UUID.randomUUID()
 
-        // 현재 시각 기준으로 예약 기간이 지난 회차 생성
+        // 현재 시각 기준으로 예매 기간이 지난 회차 생성
         val now = LocalDateTime.now()
         val notAvailableRound =
             PerformanceRound(
@@ -299,7 +299,7 @@ class PaymentServiceTest {
                 reservationEndTime = now.minusMinutes(10),
             )
 
-        // Performance 생성 (예약 불가능한 회차)
+        // Performance 생성 (예매 불가능한 회차)
         val performance =
             Performance(
                 id = performanceId,

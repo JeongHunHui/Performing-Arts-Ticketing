@@ -110,7 +110,7 @@ class ReservationServiceTest {
         val fakeReservationRepository = FakeReservationRepository()
 
         val now = LocalDateTime.now()
-        // 현재 예약 가능한 회차: reservationStartTime <= now <= reservationEndTime
+        // 현재 예매 가능한 회차: reservationStartTime <= now <= reservationEndTime
         val availableRound =
             PerformanceRound(
                 id = UUID.randomUUID(),
@@ -135,7 +135,7 @@ class ReservationServiceTest {
             )
         fakePerformanceRepository.save(performance)
 
-        // 예약할 티켓 생성 (티켓의 회차는 availableRound.id 사용)
+        // 예매할 티켓 생성 (티켓의 회차는 availableRound.id 사용)
         val ticketId1 = UUID.randomUUID()
         val ticket1 =
             Ticket(
@@ -181,7 +181,7 @@ class ReservationServiceTest {
         val response: TempReserveResponse = reservationService.tempReserve(request)
 
         // Then
-        // 저장된 예약 목록 중 response.reservationId와 일치하는 예약이 있어야 함
+        // 저장된 예매 목록 중 response.reservationId와 일치하는 예매이 있어야 함
         assertTrue(fakeReservationRepository.isExists(response.reservationId))
     }
 
@@ -192,7 +192,7 @@ class ReservationServiceTest {
         val fakeReservationRepo = FakeReservationRepository()
 
         val now = LocalDateTime.now()
-        // 예약 가능한 회차 생성 (정상 동작하는 회차)
+        // 예매 가능한 회차 생성 (정상 동작하는 회차)
         val availableRound =
             PerformanceRound(
                 id = UUID.randomUUID(),
@@ -217,7 +217,7 @@ class ReservationServiceTest {
             )
         fakePerformanceRepo.save(performance)
 
-        // 두 개의 티켓을 예약 요청 (2 > 1)
+        // 두 개의 티켓을 예매 요청 (2 > 1)
         val ticketId1 = UUID.randomUUID()
         val ticket1 =
             Ticket(
@@ -268,13 +268,13 @@ class ReservationServiceTest {
     }
 
     @Test
-    fun `예약 가능한 회차가 아닐 경우 예외 발생`() {
+    fun `예매 가능한 회차가 아닐 경우 예외 발생`() {
         // Given
         val fakePerformanceRepo = FakePerformanceRepository()
         val fakeReservationRepo = FakeReservationRepository()
 
         val now = LocalDateTime.now()
-        // 예약 시간이 이미 지난 회차 생성 (예약 불가능)
+        // 예매 시간이 이미 지난 회차 생성 (예매 불가능)
         val notAvailableRound =
             PerformanceRound(
                 id = UUID.randomUUID(),
@@ -298,7 +298,7 @@ class ReservationServiceTest {
             )
         fakePerformanceRepo.save(performance)
 
-        // 예약할 티켓 생성 (회차는 notAvailableRound.id 사용)
+        // 예매할 티켓 생성 (회차는 notAvailableRound.id 사용)
         val ticketId = UUID.randomUUID()
         val ticket =
             Ticket(
@@ -326,7 +326,7 @@ class ReservationServiceTest {
                 reservationRepository = fakeReservationRepo,
             )
 
-        // When & Then: 예약 가능한 회차가 아니므로 BusinessException 발생
+        // When & Then: 예매 가능한 회차가 아니므로 BusinessException 발생
         assertErrorCode(PerformanceErrorCode.ROUND_NOT_AVAILABLE) {
             reservationService.tempReserve(
                 request,
