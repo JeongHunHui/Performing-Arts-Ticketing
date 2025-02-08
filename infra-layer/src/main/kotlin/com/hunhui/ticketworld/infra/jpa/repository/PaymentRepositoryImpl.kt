@@ -22,6 +22,10 @@ internal class PaymentRepositoryImpl(
         paymentJpaRepository.save(payment.entity)
     }
 
+    override fun saveAll(payments: List<Payment>) {
+        paymentJpaRepository.saveAll(payments.map { it.entity })
+    }
+
     private val PaymentEntity.domain: Payment
         get() =
             Payment(

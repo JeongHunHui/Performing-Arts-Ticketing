@@ -6,11 +6,11 @@ spring:
         password: password
     jpa:
         database: mysql
-        show-sql: true
+        show-sql: false
         hibernate:
             ddl-auto: update # TODO: 나중에 none으로 변경
         properties:
             hibernate:
                 format_sql: true
-                dialect: org.hibernate.dialect.MySQL8Dialect
+                dialect: org.hibernate.dialect.MySQLDialect
         generate-ddl: false

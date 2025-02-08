@@ -34,6 +34,10 @@ internal class ReservationRepositoryImpl(
         ticketJpaRepository.saveAll(ticketEntities)
     }
 
+    override fun saveAll(reservations: List<Reservation>) {
+        reservationJpaRepository.saveAll(reservations.map { it.entity })
+    }
+
     private val ReservationEntity.domain: Reservation
         get() {
             return Reservation(

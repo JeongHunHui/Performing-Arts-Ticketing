@@ -1,6 +1,7 @@
 package com.hunhui.ticketworld.web.controller.doc
 
 import com.hunhui.ticketworld.application.dto.request.KopisPerformanceCreateRequest
+import com.hunhui.ticketworld.application.dto.response.DummyDateCreateResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
@@ -11,5 +12,5 @@ interface DummyDataApiDoc {
     @Operation(summary = "더미 데이터 생성 API")
     fun createDummyData(
         @RequestBody request: KopisPerformanceCreateRequest,
-    ): ResponseEntity<Unit>
+    ): ResponseEntity<DummyDateCreateResponse>
 }

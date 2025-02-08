@@ -15,4 +15,6 @@ interface ReservationRepository {
     fun save(reservation: Reservation)
 
     fun saveNewTickets(tickets: List<Ticket>)
+
+    fun saveAll(reservations: List<Reservation>)
 }

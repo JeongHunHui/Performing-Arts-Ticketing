@@ -2,6 +2,7 @@ package com.hunhui.ticketworld.web.controller
 
 import com.hunhui.ticketworld.application.DummyDataService
 import com.hunhui.ticketworld.application.dto.request.KopisPerformanceCreateRequest
+import com.hunhui.ticketworld.application.dto.response.DummyDateCreateResponse
 import com.hunhui.ticketworld.web.controller.doc.DummyDataApiDoc
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -14,6 +15,6 @@ class DummyDataController(
     private val dummyDataService: DummyDataService,
 ) : DummyDataApiDoc {
     @PostMapping
-    override fun createDummyData(request: KopisPerformanceCreateRequest): ResponseEntity<Unit> =
+    override fun createDummyData(request: KopisPerformanceCreateRequest): ResponseEntity<DummyDateCreateResponse> =
         ResponseEntity.ok(dummyDataService.createDummyData(request))
 }
