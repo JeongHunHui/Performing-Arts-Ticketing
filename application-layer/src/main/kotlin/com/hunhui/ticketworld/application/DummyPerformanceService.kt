@@ -1,23 +1,17 @@
 package com.hunhui.ticketworld.application
 
 import com.hunhui.ticketworld.application.dto.request.KopisPerformanceCreateRequest
-import com.hunhui.ticketworld.application.dto.response.DummyDateCreateResponse
+import com.hunhui.ticketworld.application.dto.response.DummyPerformanceCreateResponse
 import com.hunhui.ticketworld.domain.kopis.KopisPerformance
 import com.hunhui.ticketworld.domain.kopis.KopisPerformanceFacility
 import com.hunhui.ticketworld.domain.kopis.KopisPerformanceGenre
 import com.hunhui.ticketworld.domain.kopis.KopisRepository
 import com.hunhui.ticketworld.domain.kopis.PerformanceSchedule
-import com.hunhui.ticketworld.domain.payment.Payment
-import com.hunhui.ticketworld.domain.payment.PaymentMethod
-import com.hunhui.ticketworld.domain.payment.PaymentRepository
 import com.hunhui.ticketworld.domain.performance.Performance
 import com.hunhui.ticketworld.domain.performance.PerformanceGenre
 import com.hunhui.ticketworld.domain.performance.PerformanceInfo
 import com.hunhui.ticketworld.domain.performance.PerformanceRepository
 import com.hunhui.ticketworld.domain.performance.PerformanceRound
-import com.hunhui.ticketworld.domain.reservation.Reservation
-import com.hunhui.ticketworld.domain.reservation.ReservationRepository
-import com.hunhui.ticketworld.domain.reservation.Ticket
 import com.hunhui.ticketworld.domain.seatarea.SeatArea
 import com.hunhui.ticketworld.domain.seatarea.SeatAreaRepository
 import com.hunhui.ticketworld.domain.seatarea.SeatPosition
@@ -30,20 +24,17 @@ import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.math.ceil
 import kotlin.math.sqrt
-import kotlin.random.Random
 
 @Service
-class DummyDataService(
+class DummyPerformanceService(
     private val performanceRepository: PerformanceRepository,
     private val seatAreaRepository: SeatAreaRepository,
     private val seatGradeRepository: SeatGradeRepository,
-    private val reservationRepository: ReservationRepository,
     private val kopisRepository: KopisRepository,
-    private val paymentRepository: PaymentRepository,
 ) {
-    private val logger = LogFactory.getLog(DummyDataService::class.java)
+    private val logger = LogFactory.getLog(DummyPerformanceService::class.java)
 
-    fun createDummyData(request: KopisPerformanceCreateRequest): DummyDateCreateResponse {
+    fun createDummyPerformancesByKopis(request: KopisPerformanceCreateRequest): DummyPerformanceCreateResponse {
         val kopisIds: List<String> =
             kopisRepository.findPerformanceIds(
                 currentPage = request.currentPage,
@@ -65,14 +56,14 @@ class DummyDataService(
             try {
                 processedCount++
                 logger.info("[$processedCount/${kopisIds.size}] 공연 처리 시작 (id: $id)")
-                val isSuccess = processPerformance(id, request)
+                val isSuccess = processPerformance(id)
                 if (isSuccess) successCount++
             } catch (e: Exception) {
                 logger.error("공연 처리 실패 (id: $id)", e)
             }
         }
         logger.info("총 ${kopisIds.size}개의 공연 중 ${successCount}건 저장 완료")
-        return DummyDateCreateResponse(
+        return DummyPerformanceCreateResponse(
             processedCount = processedCount,
             successCount = successCount,
         )
@@ -83,12 +74,9 @@ class DummyDataService(
      *  - KopisPerformance, 시설정보 조회
      *  - 좌석 수 유효성 체크
      *  - 유효 기간 내 회차 생성
-     *  - Performance, SeatGrade, SeatArea, Ticket, Reservation, Payment 생성 후 저장
+     *  - Performance, SeatGrade, SeatArea 생성 후 저장
      */
-    private fun processPerformance(
-        id: String,
-        request: KopisPerformanceCreateRequest,
-    ): Boolean {
+    private fun processPerformance(id: String): Boolean {
         val kopisPerformance = kopisRepository.getPerformanceById(id)
         val facilityId = kopisPerformance.facilityId
         val facility = kopisRepository.getPerformanceFacilityById(facilityId)
@@ -99,11 +87,7 @@ class DummyDataService(
             return false
         }
 
-        // 유효 기간 결정: 두 날짜 중 더 늦은 시작일, 더 이른 종료일
-        val effectiveStart = maxOf(kopisPerformance.startDate, request.startDate)
-        val effectiveEnd = minOf(kopisPerformance.endDate, request.endDate)
-
-        val scheduleDates = getScheduleDates(effectiveStart, effectiveEnd, kopisPerformance.schedules)
+        val scheduleDates = getScheduleDates(kopisPerformance.startDate, kopisPerformance.endDate, kopisPerformance.schedules)
         val rounds = createPerformanceRounds(scheduleDates)
         val performanceInfo = buildPerformanceInfo(kopisPerformance, facility)
         val performance =
@@ -126,81 +110,14 @@ class DummyDataService(
                 seatScale = seatScale,
                 seatGradeIds = seatGrades.map { it.id },
             )
-        val tickets = createTickets(seatAreas, rounds)
-        val (reservations, payments) = createReservationsAndPayments(performance, seatGrades, tickets)
-        logger.info("\n제목:\t${kopisPerformance.title}\n회차 수:\t${rounds.size}\n티켓 수:\t${tickets.size}\n예매 수:\t${reservations.size}")
+        logger.info("\n제목:\t${kopisPerformance.title}\n회차 수:\t${rounds.size}")
 
         performanceRepository.save(performance)
         seatGradeRepository.saveAll(seatGrades)
         seatAreaRepository.saveAll(seatAreas)
-        reservationRepository.saveNewTickets(tickets)
-        reservationRepository.saveAll(reservations)
-        paymentRepository.saveAll(payments)
 
         logger.info("공연 처리 완료 (id: $id)")
         return true
-    }
-
-    private fun createReservationsAndPayments(
-        performance: Performance,
-        seatGrades: List<SeatGrade>,
-        tickets: List<Ticket>,
-    ): Pair<List<Reservation>, List<Payment>> {
-        val reservations = mutableListOf<Reservation>()
-        val payments = mutableListOf<Payment>()
-
-        // 회차별 티켓 그룹핑: key는 performanceRoundId
-        val ticketsByRound: Map<UUID, List<Ticket>> = tickets.groupBy { it.performanceRoundId }
-
-        ticketsByRound.forEach { (_, roundTickets) ->
-            // 각 회차 그룹에서 70%만 예매 대상으로 처리
-            val totalTicketsToReserve = (roundTickets.size * 0.7).toInt()
-            val remainingTickets = roundTickets.take(totalTicketsToReserve).toMutableList()
-            while (remainingTickets.isNotEmpty()) {
-                // 1~4장 사이의 티켓 수를 무작위로 결정 (남은 티켓 수를 초과하지 않도록)
-                val groupSize = Random.nextInt(1, 5)
-                val numTicketsToReserve = minOf(groupSize, remainingTickets.size)
-
-                // 그룹에 포함될 티켓들을 추출 후 제거
-                val groupTickets = remainingTickets.subList(0, numTicketsToReserve).toList()
-                repeat(numTicketsToReserve) { remainingTickets.removeAt(0) }
-
-                val userId = UUID.randomUUID()
-                // 생성되는 모든 티켓은 동일 회차에 속하므로 Reservation 내 티켓들이 모두 같은 round id입니다.
-                val reservation =
-                    Reservation.createTempReservation(
-                        tickets = groupTickets,
-                        userId = userId,
-                        performanceId = performance.id,
-                    )
-                val payment = Payment.create(userId = userId, paymentMethod = PaymentMethod.CREDIT_CARD)
-
-                // 그룹 내 티켓들을 좌석등급별로 묶어 결제 항목 추가
-                groupTickets.groupBy { it.seatGradeId }.forEach { (seatGradeId, ticketsGroup) ->
-                    val seatGrade = seatGrades.first { it.id == seatGradeId }
-                    val reservationCount = ticketsGroup.size
-                    val (discountName, originalPrice, discountedPrice) =
-                        seatGrade.calculatePaymentAmount(
-                            discountId = null,
-                            reservationCount = reservationCount,
-                        )
-                    payment.addItem(
-                        seatGradeName = seatGrade.name,
-                        reservationCount = reservationCount,
-                        discountName = discountName,
-                        originalPrice = originalPrice,
-                        discountedPrice = discountedPrice,
-                    )
-                }
-                // 예매 확정 및 결제 완료 처리
-                reservation.confirm(userId, payment.id)
-                payment.complete()
-
-                reservations.add(reservation)
-                payments.add(payment)
-            }
-        }
-        return reservations to payments
     }
 
     // PerformanceInfo 생성
@@ -215,7 +132,7 @@ class DummyDataService(
             posterUrl = kopisPerformance.posterUrl,
             kopisFacilityId = kopisPerformance.facilityId,
             location = kopisPerformance.location,
-            locationAddress = facility.address, // facility.address가 존재한다고 가정
+            locationAddress = facility.address,
             cast = kopisPerformance.cast,
             crew = kopisPerformance.crew,
             runtime = kopisPerformance.runtime,
@@ -244,24 +161,6 @@ class DummyDataService(
                 name = seatGradeInfo.name,
                 price = seatGradeInfo.price.amount,
             )
-        }
-
-    // 각 구역의 좌석과 회차 정보를 기반으로 Ticket 생성
-    private fun createTickets(
-        seatAreas: List<SeatArea>,
-        rounds: List<PerformanceRound>,
-    ): List<Ticket> =
-        seatAreas.flatMap { seatArea ->
-            seatArea.positions.flatMap { seat ->
-                rounds.map { round ->
-                    Ticket.create(
-                        performanceRoundId = round.id,
-                        seatAreaId = seatArea.id,
-                        seatPositionId = seat.id,
-                        seatGradeId = seat.seatGradeId,
-                    )
-                }
-            }
         }
 
     // 공연 일정 생성: 주어진 기간과 스케줄 정보를 기반으로 LocalDateTime 목록 생성

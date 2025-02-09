@@ -9,6 +9,8 @@ interface SeatGradeRepository {
 
     fun findAllByPerformanceId(performanceId: UUID): List<SeatGrade>
 
+    fun findAllByPerformanceIds(performanceIds: List<UUID>): Map<UUID, List<SeatGrade>>
+
     fun save(seatGrade: SeatGrade)
 
     fun saveAll(seatGrades: List<SeatGrade>)

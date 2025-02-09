@@ -16,7 +16,7 @@ class FakePerformanceRepository : PerformanceRepository {
 
     override fun getById(id: UUID): Performance = performances[id] ?: throw BusinessException(NOT_FOUND)
 
-    override fun findAll(
+    override fun findAllWithPagenation(
         page: Int,
         size: Int,
     ): List<Performance> {

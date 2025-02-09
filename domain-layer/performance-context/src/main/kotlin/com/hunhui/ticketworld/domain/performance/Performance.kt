@@ -6,7 +6,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
-data class Performance(
+class Performance(
     val id: UUID,
     val info: PerformanceInfo,
     val description: String,

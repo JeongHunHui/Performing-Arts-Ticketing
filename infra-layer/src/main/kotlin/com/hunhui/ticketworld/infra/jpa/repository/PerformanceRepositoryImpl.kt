@@ -8,6 +8,7 @@ import com.hunhui.ticketworld.domain.performance.PerformanceRound
 import com.hunhui.ticketworld.domain.performance.exception.PerformanceErrorCode.NOT_FOUND
 import com.hunhui.ticketworld.infra.jpa.entity.PerformanceEntity
 import com.hunhui.ticketworld.infra.jpa.entity.PerformanceRoundEntity
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
@@ -21,17 +22,17 @@ internal class PerformanceRepositoryImpl(
 
     override fun findByKopisId(kopisId: String): Performance? = performanceJpaRepository.findByKopisId(kopisId)?.domain
 
-    override fun findAll(
+    override fun findAllWithPagenation(
         page: Int,
         size: Int,
-    ): List<Performance> =
-        performanceJpaRepository
-            .findAll(
-                Pageable.ofSize(size).withPage(page),
-            ).content
-            .map {
-                it.domain
-            }
+    ): Pair<List<Performance>, Int> {
+        val performancesWithPage: Page<PerformanceEntity> =
+            performanceJpaRepository
+                .findAll(
+                    Pageable.ofSize(size).withPage(page),
+                )
+        return performancesWithPage.content.map { it.domain } to performancesWithPage.totalPages
+    }
 
     override fun save(performance: Performance) {
         performanceJpaRepository.save(performance.entity)
@@ -68,6 +69,7 @@ internal class PerformanceRepositoryImpl(
                 roundStartTime = roundStartTime,
                 reservationStartTime = reservationStartTime,
                 reservationEndTime = reservationEndTime,
+                isTicketCreated = isTicketCreated,
             )
 
     private val Performance.entity: PerformanceEntity
@@ -96,6 +98,7 @@ internal class PerformanceRepositoryImpl(
                             reservationStartTime = it.reservationStartTime,
                             reservationEndTime = it.reservationEndTime,
                             performanceId = this.id,
+                            isTicketCreated = it.isTicketCreated,
                         )
                     },
             )

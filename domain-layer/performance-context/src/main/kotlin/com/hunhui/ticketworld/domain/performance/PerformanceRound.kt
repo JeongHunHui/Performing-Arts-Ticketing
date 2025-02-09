@@ -6,11 +6,12 @@ import com.hunhui.ticketworld.domain.performance.exception.PerformanceErrorCode.
 import java.time.LocalDateTime
 import java.util.UUID
 
-data class PerformanceRound(
+class PerformanceRound(
     val id: UUID,
     val roundStartTime: LocalDateTime,
     val reservationStartTime: LocalDateTime,
     val reservationEndTime: LocalDateTime,
+    var isTicketCreated: Boolean,
 ) {
     init {
         if (reservationStartTime.isAfter(reservationEndTime)) throw BusinessException(INVALID_RESERVATION_START_DATE)
@@ -27,9 +28,10 @@ data class PerformanceRound(
             roundStartTime = roundStartTime,
             reservationStartTime = reservationStartTime,
             reservationEndTime = reservationEndTime,
+            isTicketCreated = false,
         )
     }
 
     internal val isReservationAvailable: Boolean
-        get() = LocalDateTime.now() in reservationStartTime..reservationEndTime
+        get() = LocalDateTime.now().minusMonths(1) in reservationStartTime..reservationEndTime
 }

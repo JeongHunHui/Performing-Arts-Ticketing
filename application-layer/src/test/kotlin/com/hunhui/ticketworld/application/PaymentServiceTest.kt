@@ -210,6 +210,7 @@ class PaymentServiceTest {
                 roundStartTime = now.plusMinutes(30),
                 reservationStartTime = now.minusMinutes(5),
                 reservationEndTime = now.plusMinutes(5),
+                isTicketCreated = true,
             )
 
         // Performance 생성 (예매 가능한 회차 포함)
@@ -297,6 +298,7 @@ class PaymentServiceTest {
                 roundStartTime = now.plusMinutes(30),
                 reservationStartTime = now.minusMinutes(20),
                 reservationEndTime = now.minusMinutes(10),
+                isTicketCreated = true,
             )
 
         // Performance 생성 (예매 불가능한 회차)

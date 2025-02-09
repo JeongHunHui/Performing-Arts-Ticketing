@@ -21,4 +21,6 @@ internal class PerformanceRoundEntity(
     val reservationEndTime: LocalDateTime,
     @Column(name = "performance_id", nullable = false)
     val performanceId: UUID,
+    @Column(name = "is_ticket_created", nullable = false)
+    val isTicketCreated: Boolean = false,
 ) : BaseTimeEntity()

@@ -17,6 +17,12 @@ internal class SeatAreaRepositoryImpl(
             it.domain
         }
 
+    override fun findAllByPerformanceIds(performanceIds: List<UUID>): Map<UUID, List<SeatArea>> =
+        seatAreaJpaRepository
+            .findAllByPerformanceIdIn(performanceIds)
+            .groupBy { it.performanceId }
+            .mapValues { (_, entities) -> entities.map { it.domain } }
+
     override fun saveAll(seatAreas: List<SeatArea>) {
         seatAreaJpaRepository.saveAll(seatAreas.map { it.entity })
     }

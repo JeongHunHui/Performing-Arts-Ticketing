@@ -15,7 +15,9 @@ data class PerformanceResponse(
     val genre: PerformanceGenre,
     val posterUrl: String?,
     val location: String,
-    val description: String,
+    val descriptionImageUrls: List<String>,
+    val runtime: String?,
+    val ageLimit: String?,
     val minimumReservationStartTime: LocalDateTime,
     val seatGrades: List<SeatGradeResponse>,
     val rounds: List<PerformanceRoundResponse>,
@@ -33,7 +35,9 @@ data class PerformanceResponse(
                 genre = performance.info.genre,
                 posterUrl = performance.info.posterUrl,
                 location = performance.info.location,
-                description = performance.description,
+                descriptionImageUrls = performance.info.descriptionImageUrls,
+                runtime = performance.info.runtime,
+                ageLimit = performance.info.ageLimit,
                 minimumReservationStartTime = performance.minimumReservationStartTime,
                 seatGrades =
                     seatGrades.map {

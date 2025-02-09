@@ -34,16 +34,13 @@ class PerformanceService(
         page: Int,
         size: Int,
     ): PerformanceSummaryListResponse {
-        val performances = performanceRepository.findAll(page, size)
-        return PerformanceSummaryListResponse.from(performances)
+        val (performances, totalPages) = performanceRepository.findAllWithPagenation(page, size)
+        return PerformanceSummaryListResponse.of(performances, totalPages)
     }
 
     @Transactional
     fun createPerformance(request: PerformanceCreateRequest): PerformanceCreateResponse {
         val (performance, seatGrades, seatAreas) = request.toDomain()
-        performanceRepository.save(performance)
-        seatGradeRepository.saveAll(seatGrades)
-        seatAreaRepository.saveAll(seatAreas)
         val performanceRounds: List<PerformanceRound> = performance.rounds
         val tickets =
             seatAreas.flatMap { seatArea ->
@@ -58,6 +55,10 @@ class PerformanceService(
                     }
                 }
             }
+        performance.rounds.map { it.isTicketCreated = true }
+        performanceRepository.save(performance)
+        seatGradeRepository.saveAll(seatGrades)
+        seatAreaRepository.saveAll(seatAreas)
         reservationRepository.saveNewTickets(tickets)
         return PerformanceCreateResponse(performance.id)
     }

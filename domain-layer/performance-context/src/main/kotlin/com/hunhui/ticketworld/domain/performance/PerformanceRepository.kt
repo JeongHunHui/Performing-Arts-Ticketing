@@ -7,10 +7,10 @@ interface PerformanceRepository {
 
     fun findByKopisId(kopisId: String): Performance?
 
-    fun findAll(
+    fun findAllWithPagenation(
         page: Int,
         size: Int,
-    ): List<Performance>
+    ): Pair<List<Performance>, Int>
 
     fun save(performance: Performance)
 }

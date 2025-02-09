@@ -6,4 +6,6 @@ import java.util.UUID
 
 internal interface SeatAreaJpaRepository : JpaRepository<SeatAreaEntity, UUID> {
     fun findByPerformanceId(performanceId: UUID): List<SeatAreaEntity>
+
+    fun findAllByPerformanceIdIn(performanceIds: List<UUID>): List<SeatAreaEntity>
 }

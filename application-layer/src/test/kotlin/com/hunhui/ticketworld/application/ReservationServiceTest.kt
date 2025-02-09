@@ -117,6 +117,7 @@ class ReservationServiceTest {
                 roundStartTime = now.plusMinutes(30),
                 reservationStartTime = now.minusMinutes(5),
                 reservationEndTime = now.plusMinutes(5),
+                isTicketCreated = true,
             )
         // maxReservationCount가 충분한 공연 생성
         val performance =
@@ -199,6 +200,7 @@ class ReservationServiceTest {
                 roundStartTime = now.plusMinutes(30),
                 reservationStartTime = now.minusMinutes(5),
                 reservationEndTime = now.plusMinutes(5),
+                isTicketCreated = true,
             )
         // maxReservationCount를 1로 설정하여 티켓 수가 초과하면 예외가 발생하도록 함
         val performance =
@@ -281,6 +283,7 @@ class ReservationServiceTest {
                 roundStartTime = now.plusMinutes(30),
                 reservationStartTime = now.minusMinutes(20),
                 reservationEndTime = now.minusMinutes(10),
+                isTicketCreated = true,
             )
         val performance =
             Performance(

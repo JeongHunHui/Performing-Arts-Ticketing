@@ -31,6 +31,12 @@ internal class SeatGradeRepositoryImpl(
             .findAllByPerformanceId(performanceId)
             .map { it.domain }
 
+    override fun findAllByPerformanceIds(performanceIds: List<UUID>): Map<UUID, List<SeatGrade>> =
+        seatGradeJpaRepository
+            .findAllByPerformanceIdIn(performanceIds)
+            .groupBy { it.performanceId }
+            .mapValues { (_, entities) -> entities.map { it.domain } }
+
     override fun save(seatGrade: SeatGrade) {
         seatGradeJpaRepository.save(seatGrade.entity)
     }

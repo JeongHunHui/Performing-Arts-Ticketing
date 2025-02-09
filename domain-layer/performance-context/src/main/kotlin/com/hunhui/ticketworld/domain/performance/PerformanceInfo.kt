@@ -12,6 +12,5 @@ data class PerformanceInfo(
     val crew: String? = null,
     val runtime: String? = null,
     val ageLimit: String? = null,
-    val seatScale: Int? = null,
     val descriptionImageUrls: List<String> = emptyList(),
 )
