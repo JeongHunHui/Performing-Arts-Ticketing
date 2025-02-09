@@ -25,7 +25,7 @@ internal class SeatGradeEntity(
     @OneToMany(
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
-        fetch = FetchType.LAZY,
+        fetch = FetchType.EAGER,
     )
     @JoinColumn(name = "seat_grade_id")
     val discounts: List<DiscountEntity> = emptyList(),

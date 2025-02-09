@@ -29,7 +29,7 @@ internal class SeatAreaEntity(
     @OneToMany(
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
-        fetch = FetchType.LAZY,
+        fetch = FetchType.EAGER,
     )
     @JoinColumn(name = "seat_area_id")
     val positions: List<SeatPositionEntity> = emptyList(),

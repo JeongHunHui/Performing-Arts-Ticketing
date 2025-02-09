@@ -31,7 +31,7 @@ internal class PaymentEntity(
     @OneToMany(
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
-        fetch = FetchType.LAZY,
+        fetch = FetchType.EAGER,
     )
     @JoinColumn(name = "payment_id")
     val items: List<PaymentItemEntity> = listOf(),

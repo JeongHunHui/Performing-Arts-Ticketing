@@ -26,7 +26,7 @@ internal class ReservationEntity(
     @OneToMany(
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
-        fetch = FetchType.LAZY,
+        fetch = FetchType.EAGER,
     )
     @JoinColumn(name = "reservation_id")
     val tickets: List<TicketEntity> = mutableListOf(),
