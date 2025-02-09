@@ -19,10 +19,10 @@ class DummyDataController(
     private val dummyReservationService: DummyReservationService,
 ) : DummyDataApiDoc {
     @PostMapping("/performances")
-    override fun createDummyPerformances(request: KopisPerformanceCreateRequest): ResponseEntity<DummyPerformanceCreateResponse> =
+    override suspend fun createDummyPerformances(request: KopisPerformanceCreateRequest): ResponseEntity<DummyPerformanceCreateResponse> =
         ResponseEntity.ok(dummyPerformanceService.createDummyPerformancesByKopis(request))
 
     @PostMapping("/reservations")
-    override fun createDummyReservations(request: DummyReservationCreateRequest): ResponseEntity<DummyReservationCreateResponse> =
+    override suspend fun createDummyReservations(request: DummyReservationCreateRequest): ResponseEntity<DummyReservationCreateResponse> =
         ResponseEntity.ok(dummyReservationService.createDummyReservations(request))
 }

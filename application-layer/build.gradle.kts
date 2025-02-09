@@ -9,6 +9,10 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     implementation("org.springframework:spring-tx")
 
+    // coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.10.1")
+
     implementation(project(":domain-layer:performance-context"))
     implementation(project(":domain-layer:seat-area-context"))
     implementation(project(":domain-layer:user-context"))

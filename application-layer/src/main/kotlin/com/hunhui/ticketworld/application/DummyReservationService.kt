@@ -15,6 +15,11 @@ import com.hunhui.ticketworld.domain.seatarea.SeatArea
 import com.hunhui.ticketworld.domain.seatarea.SeatAreaRepository
 import com.hunhui.ticketworld.domain.seatgrade.SeatGrade
 import com.hunhui.ticketworld.domain.seatgrade.SeatGradeRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import org.apache.commons.logging.LogFactory
 import org.springframework.stereotype.Service
 import java.util.UUID
@@ -30,61 +35,82 @@ class DummyReservationService(
 ) {
     private val logger = LogFactory.getLog(DummyPerformanceService::class.java)
 
-    fun createDummyReservations(request: DummyReservationCreateRequest): DummyReservationCreateResponse {
-        val (performances, _) = performanceRepository.findAllWithPagenation(request.page, request.size)
-        val performanceIds = performances.map { it.id }
-        val seatAreasMap: Map<UUID, List<SeatArea>> = seatAreaRepository.findAllByPerformanceIds(performanceIds)
-        val seatGradesMap: Map<UUID, List<SeatGrade>> = seatGradeRepository.findAllByPerformanceIds(performanceIds)
-        logger.info("총 ${performances.size}개의 공연 조회 완료")
-        var processedCount = 0
-        var successCount = 0
+    /**
+     * 각 공연별 예매 생성 작업을 병렬로 처리합니다.
+     */
+    suspend fun createDummyReservations(request: DummyReservationCreateRequest): DummyReservationCreateResponse =
+        coroutineScope {
+            // DB 조회는 I/O 디스패처 사용
+            val (performances, _) =
+                withContext(Dispatchers.IO) {
+                    performanceRepository.findAllWithPagenation(request.page, request.size)
+                }
+            val performanceIds = performances.map { it.id }
+            val seatAreasMap: Map<UUID, List<SeatArea>> =
+                withContext(Dispatchers.IO) {
+                    seatAreaRepository.findAllByPerformanceIds(performanceIds)
+                }
+            val seatGradesMap: Map<UUID, List<SeatGrade>> =
+                withContext(Dispatchers.IO) {
+                    seatGradeRepository.findAllByPerformanceIds(performanceIds)
+                }
+            logger.info("총 ${performances.size}개의 공연 조회 완료")
 
-        // 예약 관련 설정을 요청 파라미터에서 받도록 변경 (없으면 기본값 사용)
-        val reservationRatio = request.reservationRatio ?: 0.7
-        val minTicketsPerReservation = request.minTicketsPerReservation ?: 1
-        val maxTicketsPerReservation = request.maxTicketsPerReservation ?: 4
+            // 예약 관련 설정 (요청 파라미터에 없으면 기본값 사용)
+            val reservationRatio = request.reservationRatio
+            val minTicketsPerReservation = request.minTicketsPerReservation
+            val maxTicketsPerReservation = request.maxTicketsPerReservation
 
-        for (performance in performances) {
-            try {
-                processedCount++
-                logger.info("[$processedCount/${performances.size}] 예매 생성 시작 (id: ${performance.id})")
-                val targetRounds = performance.rounds.filter { !it.isTicketCreated }
-                performance.rounds.forEach { it.isTicketCreated = true }
-                val seatAreas: List<SeatArea> = seatAreasMap[performance.id]!!
-                val tickets = createTickets(seatAreas, targetRounds)
-                val seatGrades: List<SeatGrade> = seatGradesMap[performance.id]!!
-                val (reservations, payments) =
-                    createReservationsAndPayments(
-                        performance,
-                        seatGrades,
-                        tickets,
-                        reservationRatio,
-                        minTicketsPerReservation,
-                        maxTicketsPerReservation,
-                    )
-                logger.info(
-                    "\n제목:\t\t${performance.info.title}\n회차 수:\t${targetRounds.size}\n티켓 수:\t${tickets.size}\n예매 수:\t${reservations.size}",
-                )
-                performanceRepository.save(performance)
-                reservationRepository.saveNewTickets(tickets)
-                reservationRepository.saveAll(reservations)
-                paymentRepository.saveAll(payments)
-                logger.info("예매 생성 완료 (id: ${performance.id})")
-                successCount++
-            } catch (e: Exception) {
-                logger.error("예매 생성 실패 (id: ${performance.id})", e)
-            }
+            // 각 공연별로 예매 생성 작업을 병렬로 실행
+            val results =
+                performances
+                    .map { performance ->
+                        async(Dispatchers.IO) {
+                            try {
+                                logger.info("예매 생성 시작 (id: ${performance.id})")
+                                val targetRounds = performance.rounds.filter { !it.isTicketCreated }
+                                // 이미 처리한 회차는 재처리하지 않도록 플래그 설정
+                                performance.rounds.forEach { it.isTicketCreated = true }
+
+                                val seatAreas: List<SeatArea> = seatAreasMap[performance.id] ?: emptyList()
+                                val tickets = createTickets(seatAreas, targetRounds)
+                                val seatGrades: List<SeatGrade> = seatGradesMap[performance.id] ?: emptyList()
+                                val (reservations, payments) =
+                                    createReservationsAndPayments(
+                                        performance,
+                                        seatGrades,
+                                        tickets,
+                                        reservationRatio,
+                                        minTicketsPerReservation,
+                                        maxTicketsPerReservation,
+                                    )
+
+                                // DB 저장 작업도 I/O 디스패처에서 실행
+                                withContext(Dispatchers.IO) {
+                                    performanceRepository.save(performance)
+                                    reservationRepository.saveNewTickets(tickets)
+                                    reservationRepository.saveAll(reservations)
+                                    paymentRepository.saveAll(payments)
+                                }
+                                logger.info("예매 생성 완료 (id: ${performance.id})")
+                                true
+                            } catch (e: Exception) {
+                                logger.error("예매 생성 실패 (id: ${performance.id})", e)
+                                false
+                            }
+                        }
+                    }.awaitAll()
+
+            val successCount = results.count { it }
+            logger.info("총 ${performances.size}개의 공연 중 ${successCount}건 저장 완료")
+            DummyReservationCreateResponse(
+                processedCount = performances.size,
+                successCount = successCount,
+            )
         }
-        logger.info("총 ${performances.size}개의 공연 중 ${successCount}건 저장 완료")
-        return DummyReservationCreateResponse(
-            processedCount = processedCount,
-            successCount = successCount,
-        )
-    }
 
     /**
-     * 기존에는 각 회차별 티켓 그룹으로 70%를 예약했지만,
-     * 이제는 **회차+구역별**로 그룹핑하여 각 그룹의 70%를 예약합니다.
+     * 각 회차+구역별 티켓 그룹에 대해 reservationRatio 비율만큼 티켓을 예약합니다.
      *
      * @param reservationRatio 예약할 티켓 비율 (예: 0.7)
      * @param minTicketsPerReservation 그룹 당 최소 티켓 수
