@@ -7,6 +7,7 @@ import com.hunhui.ticketworld.domain.kopis.KopisRepository
 import com.hunhui.ticketworld.infra.http.dto.response.KopisPerformanceFacilityResponse
 import com.hunhui.ticketworld.infra.http.dto.response.KopisPerformanceIdListResponse
 import com.hunhui.ticketworld.infra.http.dto.response.KopisPerformanceResponse
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
 
@@ -49,8 +50,16 @@ class KopisRepositoryImpl(
 
     override fun getPerformanceFacilityById(id: String): KopisPerformanceFacility {
         val kopisPerformanceFacility = kopisPerformanceFacilityRepository.findById(id)
-        return kopisPerformanceFacility ?: fetchPerformanceFacility(id).also {
-            kopisPerformanceFacilityRepository.save(it)
+        return if (kopisPerformanceFacility != null) {
+            kopisPerformanceFacility
+        } else {
+            val facility = fetchPerformanceFacility(id)
+            try {
+                kopisPerformanceFacilityRepository.save(facility)
+            } catch (e: DataIntegrityViolationException) {
+                // ignore
+            }
+            facility
         }
     }
 

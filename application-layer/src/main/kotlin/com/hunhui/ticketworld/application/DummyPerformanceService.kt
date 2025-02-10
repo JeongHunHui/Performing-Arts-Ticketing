@@ -18,6 +18,7 @@ import com.hunhui.ticketworld.domain.seatarea.SeatPosition
 import com.hunhui.ticketworld.domain.seatgrade.SeatGrade
 import com.hunhui.ticketworld.domain.seatgrade.SeatGradeRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.supervisorScope
@@ -39,16 +40,20 @@ class DummyPerformanceService(
 ) {
     private val logger = LogFactory.getLog(DummyPerformanceService::class.java)
 
-    // 결과 집계를 위한 간단한 데이터 클래스
-    private data class ProcessResult(
-        val processed: Boolean,
-        val success: Boolean,
-    )
+    private val maxConcurrentAsyncTasks = 10
+
+    private enum class ProcessStatus {
+        SKIPPED,
+        SUCCESS,
+        FAILED,
+    }
 
     /**
      * Kopis API를 통해 조회한 공연 ID 목록을 기반으로
      * 각 공연을 병렬(비동기) 처리하여 저장합니다.
+     * supervisorScope를 사용하여 개별 작업의 실패가 전체 작업에 영향을 주지 않도록 합니다.
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun createDummyPerformancesByKopis(request: KopisPerformanceCreateRequest): DummyPerformanceCreateResponse =
         supervisorScope {
             // blocking 호출이므로 IO 디스패처 사용
@@ -65,34 +70,33 @@ class DummyPerformanceService(
                 }
             logger.info("총 ${kopisIds.size}개의 공연 조회 완료")
 
-            // 각 공연 ID에 대해 비동기 작업을 수행
-            val results: List<ProcessResult> =
+            // 동시 실행 작업 수 제한: limitedParallelism를 사용하여 최대 동시 작업 수를 제한합니다.
+            val limitedDispatcher = Dispatchers.IO.limitedParallelism(maxConcurrentAsyncTasks)
+
+            // 각 공연 ID에 대해 비동기 작업을 수행 (각 작업 내에서 try-catch로 모든 예외를 처리)
+            val results: List<ProcessStatus> =
                 kopisIds
                     .map { id ->
-                        async(Dispatchers.IO) {
+                        async(limitedDispatcher) {
                             try {
                                 if (performanceRepository.findByKopisId(id) != null) {
                                     logger.info("이미 존재하는 공연 스킵 (id: $id)")
-                                    ProcessResult(processed = false, success = false)
+                                    return@async ProcessStatus.SKIPPED
                                 } else {
                                     logger.info("공연 처리 시작 (id: $id)")
-                                    val success = processPerformance(id)
-                                    ProcessResult(processed = true, success = success)
+                                    processPerformance(id)
                                 }
                             } catch (e: Exception) {
                                 logger.error("공연 처리 실패 (id: $id)", e)
-                                ProcessResult(processed = true, success = false)
+                                return@async ProcessStatus.FAILED
                             }
                         }
                     }.awaitAll()
 
-            val processedCount = results.count { it.processed }
-            val successCount = results.count { it.success }
-
-            logger.info("총 ${kopisIds.size}개의 공연 중 ${successCount}건 저장 완료")
             DummyPerformanceCreateResponse(
-                processedCount = processedCount,
-                successCount = successCount,
+                skippedCount = results.count { it == ProcessStatus.SKIPPED },
+                successCount = results.count { it == ProcessStatus.SUCCESS },
+                failedCount = results.count { it == ProcessStatus.FAILED },
             )
         }
 
@@ -103,7 +107,7 @@ class DummyPerformanceService(
      *  - 유효 기간 내 회차 생성
      *  - Performance, SeatGrade, SeatArea 생성 후 저장
      */
-    private fun processPerformance(id: String): Boolean {
+    private fun processPerformance(id: String): ProcessStatus {
         val kopisPerformance: KopisPerformance = kopisRepository.getPerformanceById(id)
         val facilityId = kopisPerformance.facilityId
         val facility: KopisPerformanceFacility = kopisRepository.getPerformanceFacilityById(facilityId)
@@ -111,7 +115,7 @@ class DummyPerformanceService(
         val seatScale: Int? = facility.getSeatScaleByFullName(kopisPerformance.location)
         if (seatScale == null || seatScale == 0) {
             logger.info("좌석 정보 없음 (id: $id, seatScale: $seatScale)")
-            return false
+            return ProcessStatus.SKIPPED
         }
 
         val scheduleDates =
@@ -133,7 +137,7 @@ class DummyPerformanceService(
         val seatGrades = createSeatGrades(kopisPerformance, performance.id)
         if (seatGrades.isEmpty()) {
             logger.info("가격 정보 없음 (id: $id)")
-            return false
+            return ProcessStatus.SKIPPED
         }
         val seatAreas =
             createSeatAreas(
@@ -148,7 +152,7 @@ class DummyPerformanceService(
         seatAreaRepository.saveAll(seatAreas)
 
         logger.info("공연 처리 완료 (id: $id)")
-        return true
+        return ProcessStatus.SUCCESS
     }
 
     // PerformanceInfo 생성
@@ -230,8 +234,6 @@ class DummyPerformanceService(
 
     // TODO: 공휴일 여부 판단
     private fun isHoliday(date: LocalDate): Boolean = false
-
-    // -------------------- 좌석 구역 생성 관련 --------------------
 
     /**
      * 좌석 총 수(seatScale)와 좌석등급 ID 목록(seatGradeIds)을 받아,
