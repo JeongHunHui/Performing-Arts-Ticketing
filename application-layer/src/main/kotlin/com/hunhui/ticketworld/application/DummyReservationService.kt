@@ -19,6 +19,8 @@ import org.apache.commons.logging.LogFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.util.UUID
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
 import kotlin.random.Random
 
 @Service
@@ -31,17 +33,14 @@ class DummyReservationService(
 ) {
     private val logger = LogFactory.getLog(DummyPerformanceService::class.java)
 
+    private val threadCount = 20
+
     private enum class ProcessStatus {
         SKIPPED,
         SUCCESS,
         FAILED,
     }
 
-    /**
-     * 각 공연별 예매 생성 작업을 동기적으로 처리합니다.
-     * 한 공연의 DB 저장 작업은 순차적으로 진행하며, 전체 작업 소요 시간 및
-     * 총 티켓을 생성한 회차 수, 생성된 티켓 수, 예매 수를 응답에 포함합니다.
-     */
     fun createDummyReservations(request: DummyReservationCreateRequest): DummyReservationCreateResponse {
         // 작업 시작 시각 기록
         val startTimeMillis = System.currentTimeMillis()
@@ -61,17 +60,19 @@ class DummyReservationService(
         val startDate = request.startDate?.atStartOfDay() ?: LocalDateTime.MIN
         val endDate = request.endDate?.atTime(23, 59, 59) ?: LocalDateTime.MAX
 
-        val results = mutableListOf<ProcessStatus>()
-
         // 누적 통계 변수
         var totalRoundsCount = 0
         var totalTicketsCount = 0
         var totalReservationsCount = 0
 
+        // Executor for asynchronous DB save tasks
+        val executor = Executors.newFixedThreadPool(threadCount)
+        // List to hold futures for DB saving tasks per performance
+        val saveFutures = mutableListOf<CompletableFuture<ProcessStatus>>()
+
         // 각 공연별로 순차적으로 예매 생성 작업을 실행
         for ((index, performance) in performances.withIndex()) {
             try {
-                logger.info("[${index + 1}/${performances.size}] 예매 생성 시작 (id: ${performance.id})")
                 // 대상 회차 필터링
                 val targetRounds =
                     performance.rounds.filter {
@@ -81,7 +82,7 @@ class DummyReservationService(
                     }
                 if (targetRounds.isEmpty()) {
                     logger.info("[${index + 1}/${performances.size}] 대상 회차가 존재하지 않음 (id: ${performance.id})")
-                    results.add(ProcessStatus.SKIPPED)
+                    saveFutures.add(CompletableFuture.completedFuture(ProcessStatus.SKIPPED))
                     continue
                 }
 
@@ -96,47 +97,73 @@ class DummyReservationService(
 
                 val seatAreas: List<SeatArea> = seatAreasMap[performance.id] ?: emptyList()
                 val tickets = createTickets(seatAreas, targetRounds)
-                // 생성된 티켓 수 누적
                 totalTicketsCount += tickets.size
 
                 if (isNoReservation) {
-                    // DB 저장 작업을 순차적으로 실행
-                    performanceRepository.save(performance)
-                    reservationRepository.saveNewTickets(tickets)
-                    results.add(ProcessStatus.SUCCESS)
-                    continue
+                    // 예약 없이 티켓만 저장하는 경우:
+                    // 비동기로 공연 업데이트와 티켓 저장 작업을 순차적으로 실행
+                    val future =
+                        CompletableFuture.supplyAsync({
+                            try {
+                                logger.info("[${index + 1}/${performances.size}] 예매 저장 작업 시작 (id: ${performance.id})")
+                                performanceRepository.save(performance)
+                                reservationRepository.saveNewTickets(tickets)
+                                logger.info("[${index + 1}/${performances.size}] 예매 저장 작업 완료 (id: ${performance.id})")
+                                ProcessStatus.SUCCESS
+                            } catch (e: Exception) {
+                                logger.error("[${index + 1}/${performances.size}] 예매 생성 처리 실패 (id: ${performance.id})", e)
+                                ProcessStatus.FAILED
+                            }
+                        }, executor)
+                    saveFutures.add(future)
+                } else {
+                    val seatGrades: List<SeatGrade> = seatGradesMap[performance.id] ?: emptyList()
+                    val (reservations, payments) =
+                        createReservationsAndPayments(
+                            performance,
+                            seatGrades,
+                            tickets,
+                            reservationRatio,
+                            minTicketsPerReservation,
+                            maxTicketsPerReservation,
+                        )
+                    totalReservationsCount += reservations.size
+
+                    // 비동기로 4개의 DB save 작업(공연, 티켓, 예매, 결제)을 순차적으로 실행
+                    val future =
+                        CompletableFuture.supplyAsync({
+                            try {
+                                logger.info("[${index + 1}/${performances.size}] 예매 저장 작업 시작 (id: ${performance.id})")
+                                performanceRepository.save(performance)
+                                reservationRepository.saveNewTickets(tickets)
+                                reservationRepository.saveAll(reservations)
+                                paymentRepository.saveAll(payments)
+                                logger.info("[${index + 1}/${performances.size}] 예매 저장 작업 완료 (id: ${performance.id})")
+                                ProcessStatus.SUCCESS
+                            } catch (e: Exception) {
+                                logger.error("[${index + 1}/${performances.size}] 예매 생성 처리 실패 (id: ${performance.id})", e)
+                                ProcessStatus.FAILED
+                            }
+                        }, executor)
+                    saveFutures.add(future)
                 }
-
-                val seatGrades: List<SeatGrade> = seatGradesMap[performance.id] ?: emptyList()
-                val (reservations, payments) =
-                    createReservationsAndPayments(
-                        performance,
-                        seatGrades,
-                        tickets,
-                        reservationRatio,
-                        minTicketsPerReservation,
-                        maxTicketsPerReservation,
-                    )
-                // 생성된 예매 수 누적
-                totalReservationsCount += reservations.size
-
-                // DB 저장 작업을 순차적으로 실행 (한 공연의 저장은 순서대로 진행)
-                performanceRepository.save(performance)
-                reservationRepository.saveNewTickets(tickets)
-                reservationRepository.saveAll(reservations)
-                paymentRepository.saveAll(payments)
-
-                logger.info("[${index + 1}/${performances.size}] 예매 생성 완료 (id: ${performance.id})")
-                results.add(ProcessStatus.SUCCESS)
             } catch (e: Exception) {
-                logger.error("[${index + 1}/${performances.size}] 예매 생성 실패 (id: ${performance.id})", e)
-                results.add(ProcessStatus.FAILED)
+                logger.error("[${index + 1}/${performances.size}] 예매 생성 처리 실패 (id: ${performance.id})", e)
+                saveFutures.add(CompletableFuture.completedFuture(ProcessStatus.FAILED))
             }
         }
 
-        // 작업 종료 시각 기록 및 소요 시간 계산
+        // 모든 공연의 DB save 작업이 완료될 때까지 대기
+        CompletableFuture.allOf(*saveFutures.toTypedArray()).join()
+
+        // Collect 각 공연의 ProcessStatus 결과
+        val results = saveFutures.map { it.get() }
+
+        // 작업 종료 시각 및 소요 시간 계산
         val endTimeMillis = System.currentTimeMillis()
         val processingTimeMillis = endTimeMillis - startTimeMillis
+
+        executor.shutdown()
 
         return DummyReservationCreateResponse(
             skippedCount = results.count { it == ProcessStatus.SKIPPED },
