@@ -27,10 +27,7 @@ internal class PerformanceRepositoryImpl(
         size: Int,
     ): Pair<List<Performance>, Int> {
         val performancesWithPage: Page<PerformanceEntity> =
-            performanceJpaRepository
-                .findAll(
-                    Pageable.ofSize(size).withPage(page),
-                )
+            performanceJpaRepository.findAllOrderByEarliestRound(Pageable.ofSize(size).withPage(page))
         return performancesWithPage.content.map { it.domain } to performancesWithPage.totalPages
     }
 
