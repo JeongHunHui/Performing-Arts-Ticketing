@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.ceil
 import kotlin.math.sqrt
 
@@ -42,6 +43,9 @@ class DummyPerformanceService(
 
     private val maxConcurrentAsyncTasks = 10
 
+    // 누적 생성 회차 수를 저장할 변수
+    private val totalRoundsCount = AtomicInteger(0)
+
     private enum class ProcessStatus {
         SKIPPED,
         SUCCESS,
@@ -52,10 +56,15 @@ class DummyPerformanceService(
      * Kopis API를 통해 조회한 공연 ID 목록을 기반으로
      * 각 공연을 병렬(비동기) 처리하여 저장합니다.
      * supervisorScope를 사용하여 개별 작업의 실패가 전체 작업에 영향을 주지 않도록 합니다.
+     * 추가로 전체 처리 소요 시간과 생성한 회차 수를 응답에 포함합니다.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun createDummyPerformancesByKopis(request: KopisPerformanceCreateRequest): DummyPerformanceCreateResponse =
         supervisorScope {
+            // 작업 시작 시각 기록
+            val startTimeMillis = System.currentTimeMillis()
+            totalRoundsCount.set(0)
+
             // blocking 호출이므로 IO 디스패처 사용
             val kopisIds: List<String> =
                 withContext(Dispatchers.IO) {
@@ -81,22 +90,27 @@ class DummyPerformanceService(
                             try {
                                 if (performanceRepository.findByKopisId(id) != null) {
                                     logger.info("이미 존재하는 공연 스킵 (id: $id)")
-                                    return@async ProcessStatus.SKIPPED
+                                    ProcessStatus.SKIPPED
                                 } else {
                                     logger.info("공연 처리 시작 (id: $id)")
                                     processPerformance(id)
                                 }
                             } catch (e: Exception) {
                                 logger.error("공연 처리 실패 (id: $id)", e)
-                                return@async ProcessStatus.FAILED
+                                ProcessStatus.FAILED
                             }
                         }
                     }.awaitAll()
+
+            val endTimeMillis = System.currentTimeMillis()
+            val processingTimeMillis = endTimeMillis - startTimeMillis
 
             DummyPerformanceCreateResponse(
                 skippedCount = results.count { it == ProcessStatus.SKIPPED },
                 successCount = results.count { it == ProcessStatus.SUCCESS },
                 failedCount = results.count { it == ProcessStatus.FAILED },
+                processingTimeMillis = processingTimeMillis,
+                totalRoundsCount = totalRoundsCount.get(),
             )
         }
 
@@ -106,11 +120,13 @@ class DummyPerformanceService(
      *  - 좌석 수 유효성 체크
      *  - 유효 기간 내 회차 생성
      *  - Performance, SeatGrade, SeatArea 생성 후 저장
+     * 성공 시 생성한 회차 수를 totalRoundsCount에 누적합니다.
      */
     private fun processPerformance(id: String): ProcessStatus {
         val kopisPerformance: KopisPerformance = kopisRepository.getPerformanceById(id)
         val facilityId = kopisPerformance.facilityId
-        val facility: KopisPerformanceFacility = kopisRepository.getPerformanceFacilityById(facilityId)
+        val facility: KopisPerformanceFacility =
+            kopisRepository.getPerformanceFacilityById(facilityId)
 
         val seatScale: Int? = facility.getSeatScaleByFullName(kopisPerformance.location)
         if (seatScale == null || seatScale == 0) {
@@ -125,6 +141,9 @@ class DummyPerformanceService(
                 kopisPerformance.schedules,
             )
         val rounds = createPerformanceRounds(scheduleDates)
+        // 생성한 회차 수 누적
+        totalRoundsCount.addAndGet(rounds.size)
+
         val performanceInfo = buildPerformanceInfo(kopisPerformance, facility)
         val performance =
             Performance.create(
