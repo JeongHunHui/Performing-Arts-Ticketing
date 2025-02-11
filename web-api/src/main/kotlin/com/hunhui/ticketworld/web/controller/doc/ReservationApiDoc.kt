@@ -12,7 +12,7 @@ import java.util.UUID
 
 @Tag(name = "Reservation", description = "예매 관련 API")
 interface ReservationApiDoc {
-    @Operation(summary = "티켓 예매 여부 목록 조회 API")
+    @Operation(summary = "티켓 예매 여부 목록 API")
     fun findAllTickets(
         @RequestParam roundId: UUID,
         @RequestParam areaId: UUID,
