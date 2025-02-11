@@ -19,6 +19,7 @@ data class PerformanceResponse(
     val runtime: String?,
     val ageLimit: String?,
     val minimumReservationStartTime: LocalDateTime,
+    val maxReservationCount: Int,
     val seatGrades: List<SeatGradeResponse>,
     val rounds: List<PerformanceRoundResponse>,
 ) {
@@ -39,6 +40,7 @@ data class PerformanceResponse(
                 runtime = performance.info.runtime,
                 ageLimit = performance.info.ageLimit,
                 minimumReservationStartTime = performance.minimumReservationStartTime,
+                maxReservationCount = performance.maxReservationCount,
                 seatGrades =
                     seatGrades.map {
                         SeatGradeResponse(
