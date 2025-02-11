@@ -28,7 +28,7 @@ class ReservationService(
         return TicketListResponse.from(ticketList)
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     fun tempReserve(request: TempReserveRequest): TempReserveResponse {
         val performance: Performance = performanceRepository.getById(request.performanceId)
 

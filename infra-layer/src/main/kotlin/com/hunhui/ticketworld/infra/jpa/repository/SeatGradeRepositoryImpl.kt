@@ -80,12 +80,12 @@ internal class SeatGradeRepositoryImpl(
                         DiscountEntity(
                             id = discount.id,
                             seatGradeId = id,
-                            name = name,
+                            name = discount.name,
                             discountConditions =
                                 discount.conditions.map {
                                     DiscountConditionEntity(
                                         id = it.id,
-                                        discountId = id,
+                                        discountId = discount.id,
                                         data = it.serialize(),
                                     )
                                 },
