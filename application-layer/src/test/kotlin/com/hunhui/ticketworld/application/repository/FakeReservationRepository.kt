@@ -44,4 +44,8 @@ class FakeReservationRepository : ReservationRepository {
     override fun saveNewTickets(tickets: List<Ticket>) {
         TODO("Not yet implemented")
     }
+
+    override fun saveAll(reservations: List<Reservation>) {
+        TODO("Not yet implemented")
+    }
 }

@@ -30,4 +30,8 @@ class FakeSeatGradeRepository : SeatGradeRepository {
                     performanceId
             }.values
             .toList()
+
+    override fun findAllByPerformanceIds(performanceIds: List<UUID>): Map<UUID, List<SeatGrade>> {
+        TODO("Not yet implemented")
+    }
 }

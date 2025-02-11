@@ -13,5 +13,9 @@ class FakePaymentRepository : PaymentRepository {
         payments[payment.id] = payment
     }
 
+    override fun saveAll(payments: List<Payment>) {
+        TODO("Not yet implemented")
+    }
+
     override fun getById(id: UUID): Payment = payments[id] ?: throw BusinessException(PaymentErrorCode.NOT_FOUND)
 }

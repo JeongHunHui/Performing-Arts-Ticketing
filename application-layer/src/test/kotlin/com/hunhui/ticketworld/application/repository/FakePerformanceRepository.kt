@@ -16,10 +16,14 @@ class FakePerformanceRepository : PerformanceRepository {
 
     override fun getById(id: UUID): Performance = performances[id] ?: throw BusinessException(NOT_FOUND)
 
+    override fun findByKopisId(kopisId: String): Performance? {
+        TODO("Not yet implemented")
+    }
+
     override fun findAllWithPagenation(
         page: Int,
         size: Int,
-    ): List<Performance> {
+    ): Pair<List<Performance>, Int> {
         TODO("Not yet implemented")
     }
 }
