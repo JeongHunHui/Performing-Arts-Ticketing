@@ -16,6 +16,6 @@ class SwaggerConfig {
 
     private fun apiInfo() =
         Info()
-            .title("API 문서")
+            .title("티켓월드 API 문서")
             .version("1.0.0")
 }
