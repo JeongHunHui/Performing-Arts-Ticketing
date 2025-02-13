@@ -1,7 +1,9 @@
 package com.hunhui.ticketworld.application
 
 import com.hunhui.ticketworld.application.dto.request.DummyReservationCreateRequest
+import com.hunhui.ticketworld.application.dto.request.DummyTicketCreateRequest
 import com.hunhui.ticketworld.application.dto.response.DummyReservationCreateResponse
+import com.hunhui.ticketworld.application.dto.response.DummyTicketCreateResponse
 import com.hunhui.ticketworld.domain.payment.Payment
 import com.hunhui.ticketworld.domain.payment.PaymentMethod
 import com.hunhui.ticketworld.domain.payment.PaymentRepository
@@ -39,6 +41,23 @@ class DummyReservationService(
         SKIPPED,
         SUCCESS,
         FAILED,
+    }
+
+    fun createDummyTickets(request: DummyTicketCreateRequest): DummyTicketCreateResponse {
+        val performance: Performance = performanceRepository.getById(request.performanceId)
+        val seatAreas: List<SeatArea> = seatAreaRepository.findByPerformanceId(request.performanceId)
+        val targetRounds = performance.rounds.filter { !it.isTicketCreated }
+        val tickets = createTickets(seatAreas, targetRounds)
+        val targetRoundIdSet = targetRounds.map { it.id }.toSet()
+        performance.rounds.forEach {
+            if (it.id in targetRoundIdSet) it.isTicketCreated = true
+        }
+        performanceRepository.save(performance)
+        reservationRepository.saveNewTickets(tickets)
+        return DummyTicketCreateResponse(
+            roundCount = targetRounds.size,
+            ticketsCount = tickets.size,
+        )
     }
 
     fun createDummyReservations(request: DummyReservationCreateRequest): DummyReservationCreateResponse {

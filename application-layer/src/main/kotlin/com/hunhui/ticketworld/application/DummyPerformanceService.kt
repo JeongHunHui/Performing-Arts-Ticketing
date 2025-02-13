@@ -1,6 +1,8 @@
 package com.hunhui.ticketworld.application
 
+import com.hunhui.ticketworld.application.dto.request.DetailDummyPerformanceCreateRequest
 import com.hunhui.ticketworld.application.dto.request.KopisPerformanceCreateRequest
+import com.hunhui.ticketworld.application.dto.response.DetailDummyPerformanceCreateResponse
 import com.hunhui.ticketworld.application.dto.response.DummyPerformanceCreateResponse
 import com.hunhui.ticketworld.domain.kopis.KopisPerformance
 import com.hunhui.ticketworld.domain.kopis.KopisPerformanceFacility
@@ -93,7 +95,11 @@ class DummyPerformanceService(
                                     ProcessStatus.SKIPPED
                                 } else {
                                     logger.info("공연 처리 시작 (id: $id)")
-                                    processPerformance(id)
+                                    processPerformance(
+                                        kopisId = id,
+                                        createSeatAreas = true,
+                                        setCanReservationNow = false,
+                                    ).first
                                 }
                             } catch (e: Exception) {
                                 logger.error("공연 처리 실패 (id: $id)", e)
@@ -114,6 +120,33 @@ class DummyPerformanceService(
             )
         }
 
+    fun createDetailDummyPerformance(request: DetailDummyPerformanceCreateRequest): DetailDummyPerformanceCreateResponse {
+        val (_, performanceId) =
+            processPerformance(
+                kopisId = request.kopisId,
+                createSeatAreas = false,
+                setCanReservationNow = true,
+            )
+        if (performanceId == null) return DetailDummyPerformanceCreateResponse(null)
+        val seatGrades: List<SeatGrade> = seatGradeRepository.findAllByPerformanceId(performanceId)
+        val seatAreas =
+            request.seatAreaSettings.map {
+                val seatGradeIds =
+                    seatGrades
+                        .filter { grade -> it.seatGradeNames.contains(grade.name) }
+                        .map { grade -> grade.id }
+                createSeatArea(
+                    performanceId = performanceId,
+                    floorName = it.floorName,
+                    areaName = it.areaName,
+                    seatCount = it.seatCount,
+                    seatGradeIds = seatGradeIds,
+                )
+            }
+        seatAreaRepository.saveAll(seatAreas)
+        return DetailDummyPerformanceCreateResponse(performanceId)
+    }
+
     /**
      * 하나의 공연 처리:
      *  - KopisPerformance 및 시설정보 조회
@@ -122,16 +155,20 @@ class DummyPerformanceService(
      *  - Performance, SeatGrade, SeatArea 생성 후 저장
      * 성공 시 생성한 회차 수를 totalRoundsCount에 누적합니다.
      */
-    private fun processPerformance(id: String): ProcessStatus {
-        val kopisPerformance: KopisPerformance = kopisRepository.getPerformanceById(id)
+    private fun processPerformance(
+        kopisId: String,
+        createSeatAreas: Boolean,
+        setCanReservationNow: Boolean,
+    ): Pair<ProcessStatus, UUID?> {
+        val kopisPerformance: KopisPerformance = kopisRepository.getPerformanceById(kopisId)
         val facilityId = kopisPerformance.facilityId
         val facility: KopisPerformanceFacility =
             kopisRepository.getPerformanceFacilityById(facilityId)
 
         val seatScale: Int? = facility.getSeatScaleByFullName(kopisPerformance.location)
         if (seatScale == null || seatScale == 0) {
-            logger.info("좌석 정보 없음 (id: $id, seatScale: $seatScale)")
-            return ProcessStatus.SKIPPED
+            logger.info("좌석 정보 없음 (id: $kopisId, seatScale: $seatScale)")
+            return ProcessStatus.SKIPPED to null
         }
 
         val scheduleDates =
@@ -140,7 +177,7 @@ class DummyPerformanceService(
                 kopisPerformance.endDate,
                 kopisPerformance.schedules,
             )
-        val rounds = createPerformanceRounds(scheduleDates)
+        val rounds = createPerformanceRounds(scheduleDates, setCanReservationNow)
         // 생성한 회차 수 누적
         totalRoundsCount.addAndGet(rounds.size)
 
@@ -155,23 +192,26 @@ class DummyPerformanceService(
 
         val seatGrades = createSeatGrades(kopisPerformance, performance.id)
         if (seatGrades.isEmpty()) {
-            logger.info("가격 정보 없음 (id: $id)")
-            return ProcessStatus.SKIPPED
+            logger.info("가격 정보 없음 (id: $kopisId)")
+            return ProcessStatus.SKIPPED to null
         }
-        val seatAreas =
-            createSeatAreas(
-                performanceId = performance.id,
-                seatScale = seatScale,
-                seatGradeIds = seatGrades.map { it.id },
-            )
 
         logger.info("\n제목:\t${kopisPerformance.title}\n회차 수:\t${rounds.size}")
         performanceRepository.save(performance)
         seatGradeRepository.saveAll(seatGrades)
-        seatAreaRepository.saveAll(seatAreas)
 
-        logger.info("공연 처리 완료 (id: $id)")
-        return ProcessStatus.SUCCESS
+        if (createSeatAreas) {
+            val seatAreas =
+                createSeatAreas(
+                    performanceId = performance.id,
+                    seatScale = seatScale,
+                    seatGradeIds = seatGrades.map { it.id },
+                )
+            seatAreaRepository.saveAll(seatAreas)
+        }
+
+        logger.info("공연 처리 완료 (id: $kopisId)")
+        return ProcessStatus.SUCCESS to performance.id
     }
 
     // PerformanceInfo 생성
@@ -195,12 +235,15 @@ class DummyPerformanceService(
         )
 
     // 회차 생성: 각 공연일시에 대해 PerformanceRound 생성
-    private fun createPerformanceRounds(dates: List<LocalDateTime>): List<PerformanceRound> =
+    private fun createPerformanceRounds(
+        dates: List<LocalDateTime>,
+        setCanReservationNow: Boolean,
+    ): List<PerformanceRound> =
         dates.map { date ->
             PerformanceRound.create(
                 roundStartTime = date,
-                reservationStartTime = date.minusDays(30),
-                reservationEndTime = date.minusDays(1),
+                reservationStartTime = if (setCanReservationNow) LocalDateTime.now() else date.minusDays(30),
+                reservationEndTime = date.minusHours(1),
             )
         }
 
@@ -314,10 +357,9 @@ class DummyPerformanceService(
 
     /**
      * 하나의 SeatArea를 생성합니다.
-     *
      * 좌석 배치는 좌석 수에 따라 그리드를 계산하며,
-     * 좌석번호는 "n열 m번" (n: 행, m: 열) 형식으로 부여되고,
-     * 좌석등급 ID는 전달받은 목록을 순환(round-robin) 방식으로 할당합니다.
+     * 좌석번호는 "n열 m번" (n: 행, m: 열) 형식으로 부여됩니다.
+     * 좌석 등급은 좌측 상단 부터 첫 번째~n번째 까지 등급1, n+1번째~2n번째 까지 등급2, ... 등 균등하게 배정됩니다.
      */
     private fun createSeatArea(
         performanceId: UUID,
@@ -329,13 +371,26 @@ class DummyPerformanceService(
         val width = ceil(sqrt(seatCount.toDouble())).toInt()
         val height = ceil(seatCount.toDouble() / width).toInt()
 
+        // 좌석 등급을 균등하게 분배
+        val gradeChunkSize = seatCount / seatGradeIds.size
+        val gradeAssignment =
+            seatGradeIds
+                .flatMap { gradeId -> List(gradeChunkSize) { gradeId } }
+                .toMutableList()
+
+        // 남은 좌석이 있다면 추가로 배정
+        val remainingSeats = seatCount % seatGradeIds.size
+        for (i in 0 until remainingSeats) {
+            gradeAssignment.add(seatGradeIds[i])
+        }
+
         val positions =
             (0 until seatCount).map { index ->
                 val x = index % width
                 val y = index / width
                 SeatPosition(
                     id = UUID.randomUUID(),
-                    seatGradeId = seatGradeIds[index % seatGradeIds.size],
+                    seatGradeId = gradeAssignment[index], // 균등 배분된 좌석 등급 할당
                     number = "${y + 1}열 ${x + 1}번",
                     x = x,
                     y = y,
