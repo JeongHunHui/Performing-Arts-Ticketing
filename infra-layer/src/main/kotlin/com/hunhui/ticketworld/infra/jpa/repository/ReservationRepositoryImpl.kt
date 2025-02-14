@@ -38,6 +38,11 @@ internal class ReservationRepositoryImpl(
         reservationJpaRepository.saveAll(reservations.map { it.entity })
     }
 
+    override fun getPaidTicketCountByRoundIdAndUserId(
+        roundId: UUID,
+        userId: UUID,
+    ): Int = reservationJpaRepository.getPaidTicketCountByRoundIdAndUserId(roundId, userId)
+
     private val ReservationEntity.domain: Reservation
         get() {
             return Reservation(

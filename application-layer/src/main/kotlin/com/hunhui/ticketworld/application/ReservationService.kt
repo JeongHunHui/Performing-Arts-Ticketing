@@ -32,13 +32,6 @@ class ReservationService(
     fun tempReserve(request: TempReserveRequest): TempReserveResponse {
         val performance: Performance = performanceRepository.getById(request.performanceId)
 
-        // 예매 가능 수량 확인
-        // TODO: 회차 id와 유저 id를 이용하여 현재 예매 수량을 조회하도록 수정
-        val currentReservationCount = 0
-        val isReservationCountExceed: Boolean =
-            performance.maxReservationCount < request.ticketIds.size + currentReservationCount
-        if (isReservationCountExceed) throw BusinessException(RESERVATION_COUNT_EXCEED)
-
         // 예매할 티켓들과 유저 id로 임시 예매 생성
         val tickets: List<Ticket> = reservationRepository.getTicketsByIds(request.ticketIds)
         val reservation =
@@ -50,6 +43,11 @@ class ReservationService(
 
         // 예매 가능한 회차인지 확인
         if (!performance.isAvailableRoundId(reservation.roundId)) throw BusinessException(ROUND_NOT_AVAILABLE)
+
+        // 예매 가능한 수량인지 확인
+        val paidTicketCount: Int = reservationRepository.getPaidTicketCountByRoundIdAndUserId(reservation.roundId, request.userId)
+        val isReservationCountExceed = performance.maxReservationCount < request.ticketIds.size + paidTicketCount
+        if (isReservationCountExceed) throw BusinessException(RESERVATION_COUNT_EXCEED)
 
         reservationRepository.save(reservation)
         return TempReserveResponse(reservationId = reservation.id)

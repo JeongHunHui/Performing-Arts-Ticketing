@@ -48,4 +48,9 @@ class FakeReservationRepository : ReservationRepository {
     override fun saveAll(reservations: List<Reservation>) {
         TODO("Not yet implemented")
     }
+
+    override fun getPaidTicketCountByRoundIdAndUserId(
+        roundId: UUID,
+        userId: UUID,
+    ): Int = 0
 }

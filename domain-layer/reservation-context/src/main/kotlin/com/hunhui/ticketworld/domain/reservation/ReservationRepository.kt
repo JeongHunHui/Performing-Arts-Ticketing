@@ -17,4 +17,9 @@ interface ReservationRepository {
     fun saveNewTickets(tickets: List<Ticket>)
 
     fun saveAll(reservations: List<Reservation>)
+
+    fun getPaidTicketCountByRoundIdAndUserId(
+        roundId: UUID,
+        userId: UUID,
+    ): Int
 }

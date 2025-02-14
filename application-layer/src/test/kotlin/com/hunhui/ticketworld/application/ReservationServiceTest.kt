@@ -230,7 +230,7 @@ class ReservationServiceTest {
                 seatGradeId = UUID.randomUUID(),
                 reservationId = null,
                 isPaid = false,
-                expireTime = now.plusMinutes(10),
+                expireTime = now,
             )
         fakeReservationRepo.addTicket(ticket1)
 
@@ -244,7 +244,7 @@ class ReservationServiceTest {
                 seatGradeId = UUID.randomUUID(),
                 reservationId = null,
                 isPaid = false,
-                expireTime = now.plusMinutes(10),
+                expireTime = now,
             )
         fakeReservationRepo.addTicket(ticket2)
 

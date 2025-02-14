@@ -10,6 +10,7 @@ import com.hunhui.ticketworld.domain.performance.PerformanceRepository
 import com.hunhui.ticketworld.domain.performance.exception.PerformanceErrorCode.ROUND_NOT_AVAILABLE
 import com.hunhui.ticketworld.domain.reservation.Reservation
 import com.hunhui.ticketworld.domain.reservation.ReservationRepository
+import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode.RESERVATION_COUNT_EXCEED
 import com.hunhui.ticketworld.domain.seatgrade.SeatGrade
 import com.hunhui.ticketworld.domain.seatgrade.SeatGradeRepository
 import org.springframework.stereotype.Service
@@ -59,9 +60,14 @@ class PaymentService(
         // 예매 조회
         val reservation: Reservation = reservationRepository.getById(request.reservationId)
 
-        // 예매 기간이 지난 회차가 아닌지 확인
+        // 예매 가능한 회차인지 확인
         val performance = performanceRepository.getById(reservation.performanceId)
         if (!performance.isAvailableRoundId(reservation.roundId)) throw BusinessException(ROUND_NOT_AVAILABLE)
+
+        // 예매 가능한 수량인지 확인
+        val paidTicketCount: Int = reservationRepository.getPaidTicketCountByRoundIdAndUserId(reservation.roundId, request.userId)
+        val isReservationCountExceed = performance.maxReservationCount < reservation.tickets.size + paidTicketCount
+        if (isReservationCountExceed) throw BusinessException(RESERVATION_COUNT_EXCEED)
 
         // 예매 확정 처리
         val confirmedReservation = reservation.confirm(request.userId, request.paymentId)
