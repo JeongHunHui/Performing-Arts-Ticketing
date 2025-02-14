@@ -99,6 +99,7 @@ class DummyPerformanceService(
                                         kopisId = id,
                                         createSeatAreas = true,
                                         setCanReservationNow = false,
+                                        maxReservationCount = 10,
                                     ).first
                                 }
                             } catch (e: Exception) {
@@ -126,6 +127,7 @@ class DummyPerformanceService(
                 kopisId = request.kopisId,
                 createSeatAreas = false,
                 setCanReservationNow = true,
+                maxReservationCount = request.maxReservationCount,
             )
         if (performanceId == null) return DetailDummyPerformanceCreateResponse(null)
         val seatGrades: List<SeatGrade> = seatGradeRepository.findAllByPerformanceId(performanceId)
@@ -159,6 +161,7 @@ class DummyPerformanceService(
         kopisId: String,
         createSeatAreas: Boolean,
         setCanReservationNow: Boolean,
+        maxReservationCount: Int,
     ): Pair<ProcessStatus, UUID?> {
         val kopisPerformance: KopisPerformance = kopisRepository.getPerformanceById(kopisId)
         val facilityId = kopisPerformance.facilityId
@@ -187,7 +190,7 @@ class DummyPerformanceService(
                 performanceInfo = performanceInfo,
                 description = "설명",
                 rounds = rounds,
-                maxReservationCount = 10,
+                maxReservationCount = maxReservationCount,
             )
 
         val seatGrades = createSeatGrades(kopisPerformance, performance.id)
@@ -333,7 +336,7 @@ class DummyPerformanceService(
         val groupCount = ceil(totalZones.toDouble() / maxZonesPerGroup).toInt()
 
         // 4. (floor, group, letter) 순서로 구역 이름 목록 생성
-        val zoneNames = mutableListOf<Pair<String, String>>() // Pair<floorName, areaName>
+        val zoneNames = mutableListOf<Pair<String, String>>()
         for (group in 1..groupCount) {
             for (floor in 1..floorCount) {
                 for (letter in 'A'..'Z') {
@@ -390,7 +393,7 @@ class DummyPerformanceService(
                 val y = index / width
                 SeatPosition(
                     id = UUID.randomUUID(),
-                    seatGradeId = gradeAssignment[index], // 균등 배분된 좌석 등급 할당
+                    seatGradeId = gradeAssignment[index],
                     number = "${y + 1}열 ${x + 1}번",
                     x = x,
                     y = y,
