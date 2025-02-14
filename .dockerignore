@@ -1,0 +1,8 @@
+# 모든 파일 제외
+**
+
+# 필요한 파일 또는 폴더만 다시 포함
+!web-api/build/libs/*.jar
+!newrelic/newrelic.jar
+!newrelic/newrelic.yml
+!.env

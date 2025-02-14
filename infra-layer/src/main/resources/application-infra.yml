@@ -1,9 +1,6 @@
 spring:
     datasource:
         driver-class-name: com.mysql.cj.jdbc.Driver
-        url: jdbc:mysql://localhost:3306/develop?serverTimezone=Asia/Seoul
-        username: admin
-        password: password
         hikari:
             maximum-pool-size: 50
             minimum-idle: 10
@@ -11,14 +8,13 @@ spring:
         database: mysql
         show-sql: false
         hibernate:
-            ddl-auto: update # TODO: 나중에 none으로 변경
+            ddl-auto: update
         properties:
             hibernate:
                 format_sql: true
                 dialect: org.hibernate.dialect.MySQLDialect
                 jdbc:
                     batch_size: 1000
-                # INSERT/UPDATE 순서를 정렬하여 배치 효율 개선
                 order_inserts: true
                 order_updates: true
         generate-ddl: false

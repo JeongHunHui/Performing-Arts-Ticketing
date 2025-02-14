@@ -1,0 +1,27 @@
+version: '3.7'
+
+services:
+    ticket-world-spring:
+        build:
+            context: .
+            dockerfile: web-api.dockerfile
+        ports:
+            - "8080:8080"
+        expose:
+            - "8080"
+
+    agent:
+        container_name: newrelic-infra
+        build:
+            context: ./newrelic
+            dockerfile: newrelic-infra.dockerfile
+        cap_add:
+            - SYS_PTRACE
+        pid: host
+        privileged: true
+        volumes:
+            - "/:/host:ro"
+            - "/var/run/docker.sock:/var/run/docker.sock"
+        restart: unless-stopped
+        environment:
+            NRIA_LICENSE_KEY: ${NEW_RELIC_LICENSE_KEY}
