@@ -38,7 +38,7 @@ common: &default_settings
     stack_trace_threshold: 0.1
     explain_enabled: true
     explain_threshold: 0.1
-    top_n: 20
+    top_n: 0
   error_collector:
     enabled: true
     ignore_classes:

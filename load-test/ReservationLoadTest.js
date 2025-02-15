@@ -22,11 +22,13 @@ const baseUrl = __ENV.BASE_URL || "http://localhost:8080/api/v1";
 function chooseTicketCount(maxReservationCount) {
     let rnd = Math.random();
     if (rnd < 0.4) rnd = 1;
-    else if (rnd < 0.3) rnd = 2;
-    else if (rnd < 0.2) rnd = 3;
+    else if (rnd < 0.7) rnd = 2;
+    else if (rnd < 0.9) rnd = 3;
     else rnd = 4;
     return Math.min(maxReservationCount, rnd);
 }
+
+const timeOptions = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
 
 /** 0 이상, max 이하의 정수를 반환 */
 function getRandomInt(max) {
@@ -130,10 +132,10 @@ function requestPaymentConfirm(paymentId, userId, reservationId) {
     return paymentConfirmRes;
 }
 
-const performanceId = '5d25445b-e0b4-4370-a39c-6efb3ec0dd6e';
-const roundId = '20a0d2ff-5f3c-4c1c-ad3d-c8faa06a40a5';
+const performanceId = 'f43033be-fdab-475f-bd3c-9a7113b3bfa5';
+const roundId = 'dd8113fd-e181-4edd-918c-b820fa95e1fb';
 
-const maxUserCount = Number(__ENV.MAX_USER) || 50;
+const maxUserCount = Number(__ENV.MAX_USER) || 100;
 const sleepDuration = 1;
 
 export let options = {
@@ -154,6 +156,8 @@ export let options = {
 };
 
 export function setup() {
+    console.info(`---------- 테스트 시작 ----------`);
+    console.info(`시작 시간: ${new Date().toLocaleString('ko-KR', timeOptions)}`);
     const seatAreasRes = requestSeatAreas(performanceId);
     const seatAreas = seatAreasRes.json().seatAreas;
     totalSeatScale.add(seatAreas.reduce((acc, curr) => acc + curr.positions.length, 0));
@@ -167,7 +171,7 @@ export function setup() {
  */
 export default function (data) {
     // ---------- 0. 예매 페이지 진입 ----------
-    sleep(Math.random() * sleepDuration * 2);
+    sleep(Math.random() * sleepDuration * 5);
     // 0-1. 공연 및 회차 선택
     const currentPerformanceId = performanceId;
     const currentRoundId = roundId;
@@ -285,7 +289,7 @@ export default function (data) {
         return; // 예매 가능 수량을 초과하는 경우 종료
     }
     checkOrFail(paymentConfirmRes, '결제 승인');
-    console.info(`사용자 ${currentUserId}가 ${selectedTickets.length}개의 티켓을 결제하였습니다!`);
+    // console.info(`사용자 ${currentUserId}가 ${selectedTickets.length}개의 티켓을 결제하였습니다!`);
     paidTicketCounts.add(selectedTickets.length);
 }
 
@@ -295,6 +299,8 @@ export function handleSummary(data) {
     let paidSeats = data.metrics.paid_ticket_counts.values.count;
 
     console.info(`---------- 테스트 종료 ----------`);
+    const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    console.info(`종료 시간: ${new Date().toLocaleString('ko-KR', timeOptions)}`);
     console.info(`🎟 총 티켓 수: ${totalSeats}`);
     console.info(`📌 예약된 티켓 수: ${reservedSeats}`);
     console.info(`💳 결제된 티켓 수: ${paidSeats}`);
