@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+    ticket-world-influxdb:
+        image: bitnami/influxdb:1.8.5
+        ports:
+            - "8086:8086"
+            - "8088:8088"
+        environment:
+            - INFLUXDB_HTTP_AUTH_ENABLED=${INFLUXDB_HTTP_AUTH_ENABLED}
+            - INFLUXDB_DB=${INFLUXDB_DB}
+        volumes:
+            - ./ticket-world-influxdb-data:/var/lib/influxdb
+
+    ticket-world-grafana:
+        image: bitnami/grafana
+        ports:
+            - "3001:3000"
+        volumes:
+            - ./ticket-world-grafana-data:/var/lib/grafana
+
+volumes:
+    ticket-world-influxdb-data:
+    ticket-world-grafana-data:

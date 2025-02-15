@@ -9,6 +9,13 @@ services:
             - "8080:8080"
         expose:
             - "8080"
+        deploy:
+            resources:
+                limits:
+                    cpus: "2.0"
+                    memory: 2GB
+        environment:
+            NEW_RELIC_LICENSE_KEY: ${NEW_RELIC_LICENSE_KEY}
 
     agent:
         container_name: newrelic-infra

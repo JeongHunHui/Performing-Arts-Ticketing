@@ -9,6 +9,11 @@ services:
             MYSQL_DATABASE: ${MYSQL_DATABASE}
             MYSQL_USER: ${MYSQL_USER}
             MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+        deploy:
+            resources:
+                limits:
+                    cpus: "2.0"
+                    memory: 2GB
         expose:
             - "3306"
         ports:

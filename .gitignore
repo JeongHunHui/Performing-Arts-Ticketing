@@ -1,6 +1,7 @@
 .env
-
 **/application*-secret.yml
+**/*-grafana-data/*
+**/*-influxdb-data/*
 
 test/HELP.md
 .gradle
