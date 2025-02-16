@@ -30,8 +30,6 @@ class ReservationService(
 
     @Transactional
     fun tempReserve(request: TempReserveRequest): TempReserveResponse {
-        val performance: Performance = performanceRepository.getById(request.performanceId)
-
         // 예매할 티켓들과 유저 id로 임시 예매 생성
         val tickets: List<Ticket> = reservationRepository.getTicketsByIds(request.ticketIds)
         val reservation =
@@ -42,6 +40,7 @@ class ReservationService(
             )
 
         // 예매 가능한 회차인지 확인
+        val performance: Performance = performanceRepository.getById(request.performanceId)
         if (!performance.isAvailableRoundId(reservation.roundId)) throw BusinessException(ROUND_NOT_AVAILABLE)
 
         // 예매 가능한 수량인지 확인

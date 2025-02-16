@@ -20,6 +20,24 @@ services:
             - "3306:3306"
         volumes:
             - ticket-world-mysql:/var/lib/mysql
+        networks:
+            - monitoring_net
+
+    ticket-world-mysql-exporter:
+        image: prom/mysqld-exporter
+        ports:
+            - "9104:9104"
+        depends_on:
+            -   ticket-world-mysql
+        command:
+            - "--mysqld.username=${MYSQL_USER}:${MYSQL_PASSWORD}"
+            - "--mysqld.address=ticket-world-mysql:3306"
+        networks:
+            - monitoring_net
 
 volumes:
     ticket-world-mysql:
+
+networks:
+    monitoring_net:
+        external: true

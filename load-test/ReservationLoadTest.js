@@ -132,8 +132,12 @@ function requestPaymentConfirm(paymentId, userId, reservationId) {
     return paymentConfirmRes;
 }
 
-const performanceId = 'f43033be-fdab-475f-bd3c-9a7113b3bfa5';
-const roundId = 'dd8113fd-e181-4edd-918c-b820fa95e1fb';
+const performanceId = 'e1cbb451-f54b-4a73-8e0b-3dcec2db5bf1';
+
+// 워밍업
+// const roundId = 'c94f3dca-fd89-4f2e-aece-954ec14ab6b3';
+// 본편
+const roundId = '133a48d7-dabe-4a37-8eed-a5200601f470';
 
 const maxUserCount = Number(__ENV.MAX_USER) || 100;
 const sleepDuration = 1;
@@ -171,7 +175,7 @@ export function setup() {
  */
 export default function (data) {
     // ---------- 0. 예매 페이지 진입 ----------
-    sleep(Math.random() * sleepDuration * 5);
+    sleep(Math.random() * sleepDuration * 2);
     // 0-1. 공연 및 회차 선택
     const currentPerformanceId = performanceId;
     const currentRoundId = roundId;
