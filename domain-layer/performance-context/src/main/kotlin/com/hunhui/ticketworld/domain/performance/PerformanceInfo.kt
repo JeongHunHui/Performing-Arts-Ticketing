@@ -13,4 +13,5 @@ data class PerformanceInfo(
     val runtime: String? = null,
     val ageLimit: String? = null,
     val descriptionImageUrls: List<String> = emptyList(),
+    val description: String = "",
 )

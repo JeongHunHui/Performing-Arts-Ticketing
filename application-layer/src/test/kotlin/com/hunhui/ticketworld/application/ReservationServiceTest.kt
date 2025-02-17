@@ -129,8 +129,8 @@ class ReservationServiceTest {
                         genre = PerformanceGenre.CONCERT,
                         posterUrl = "http://test.com/image.png",
                         location = "Test Hall",
+                        description = "테스트 설명",
                     ),
-                description = "테스트 설명",
                 maxReservationCount = 10,
                 rounds = listOf(availableRound),
             )
@@ -212,8 +212,8 @@ class ReservationServiceTest {
                         genre = PerformanceGenre.CONCERT,
                         posterUrl = "http://test.com/image.png",
                         location = "Test Hall",
+                        description = "테스트 설명",
                     ),
-                description = "테스트 설명",
                 maxReservationCount = 1,
                 rounds = listOf(availableRound),
             )
@@ -294,8 +294,8 @@ class ReservationServiceTest {
                         genre = PerformanceGenre.CONCERT,
                         posterUrl = "http://test.com/image.png",
                         location = "Test Hall",
+                        description = "테스트 설명",
                     ),
-                description = "테스트 설명",
                 maxReservationCount = 10,
                 rounds = listOf(notAvailableRound),
             )

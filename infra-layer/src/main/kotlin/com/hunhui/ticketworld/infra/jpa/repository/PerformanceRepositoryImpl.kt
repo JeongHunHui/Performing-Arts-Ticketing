@@ -53,8 +53,8 @@ internal class PerformanceRepositoryImpl(
                         runtime = runtime,
                         ageLimit = ageLimit,
                         descriptionImageUrls = descriptionImageUrls.split('|'),
+                        description = description,
                     ),
-                description = description,
                 maxReservationCount = maxReservationCount,
                 rounds = rounds.map { it.domain },
             )
@@ -85,7 +85,7 @@ internal class PerformanceRepositoryImpl(
                 runtime = info.runtime,
                 ageLimit = info.ageLimit,
                 descriptionImageUrls = info.descriptionImageUrls.joinToString("|"),
-                description = description,
+                description = info.description,
                 maxReservationCount = maxReservationCount,
                 rounds =
                     rounds.map {

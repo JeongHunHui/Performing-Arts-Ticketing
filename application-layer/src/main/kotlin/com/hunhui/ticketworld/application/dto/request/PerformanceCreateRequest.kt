@@ -37,7 +37,6 @@ data class PerformanceCreateRequest(
                     posterUrl = posterUrl,
                     location = location,
                 ),
-            description = description,
             maxReservationCount = maxReservationCount,
             rounds =
                 rounds.map {

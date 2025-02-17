@@ -9,7 +9,6 @@ import java.util.UUID
 class Performance(
     val id: UUID,
     val info: PerformanceInfo,
-    val description: String,
     val maxReservationCount: Int,
     val rounds: List<PerformanceRound>,
 ) {
@@ -20,14 +19,12 @@ class Performance(
     companion object {
         fun create(
             performanceInfo: PerformanceInfo,
-            description: String,
             maxReservationCount: Int,
             rounds: List<PerformanceRound>,
         ): Performance =
             Performance(
                 id = UUID.randomUUID(),
                 info = performanceInfo,
-                description = description,
                 maxReservationCount = maxReservationCount,
                 rounds = rounds,
             )

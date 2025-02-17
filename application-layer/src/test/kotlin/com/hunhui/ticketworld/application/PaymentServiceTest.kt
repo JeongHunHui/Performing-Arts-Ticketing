@@ -223,8 +223,8 @@ class PaymentServiceTest {
                         genre = PerformanceGenre.CONCERT,
                         posterUrl = "test.png",
                         location = "Test Hall",
+                        description = "Test Description",
                     ),
-                description = "Test Description",
                 maxReservationCount = 100,
                 rounds = listOf(availableRound),
             )
@@ -311,8 +311,8 @@ class PaymentServiceTest {
                         genre = PerformanceGenre.CONCERT,
                         posterUrl = "test.png",
                         location = "Test Hall",
+                        description = "Test Description",
                     ),
-                description = "Test Description",
                 maxReservationCount = 100,
                 rounds = listOf(notAvailableRound),
             )

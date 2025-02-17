@@ -184,11 +184,11 @@ class DummyPerformanceService(
         // 생성한 회차 수 누적
         totalRoundsCount.addAndGet(rounds.size)
 
-        val performanceInfo = buildPerformanceInfo(kopisPerformance, facility)
+        val dummyDescription = "설명"
+        val performanceInfo = buildPerformanceInfo(kopisPerformance, facility, dummyDescription)
         val performance =
             Performance.create(
                 performanceInfo = performanceInfo,
-                description = "설명",
                 rounds = rounds,
                 maxReservationCount = maxReservationCount,
             )
@@ -221,6 +221,7 @@ class DummyPerformanceService(
     private fun buildPerformanceInfo(
         kopisPerformance: KopisPerformance,
         facility: KopisPerformanceFacility,
+        description: String,
     ): PerformanceInfo =
         PerformanceInfo(
             kopisId = kopisPerformance.id,
@@ -235,6 +236,7 @@ class DummyPerformanceService(
             runtime = kopisPerformance.runtime,
             ageLimit = kopisPerformance.ageLimit,
             descriptionImageUrls = kopisPerformance.descriptionImageUrls,
+            description = description,
         )
 
     // 회차 생성: 각 공연일시에 대해 PerformanceRound 생성

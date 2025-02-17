@@ -27,8 +27,8 @@ object PerformanceFixtureFactory {
                     genre = genre,
                     posterUrl = posterUrl,
                     location = location,
+                    description = description,
                 ),
-            description = description,
             maxReservationCount = maxReservationCount,
             rounds = rounds,
         )
