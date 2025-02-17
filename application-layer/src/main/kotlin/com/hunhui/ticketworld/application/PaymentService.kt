@@ -61,7 +61,7 @@ class PaymentService(
         val reservation: Reservation = reservationRepository.getById(request.reservationId)
 
         // 예매 가능한 회차인지 확인
-        val performance = performanceRepository.getById(reservation.performanceId)
+        val performance = performanceRepository.getByIdAndRoundId(reservation.performanceId, reservation.roundId)
         if (!performance.isAvailableRoundId(reservation.roundId)) throw BusinessException(ROUND_NOT_AVAILABLE)
 
         // 예매 가능한 수량인지 확인

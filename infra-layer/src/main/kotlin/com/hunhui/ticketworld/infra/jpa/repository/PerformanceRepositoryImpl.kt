@@ -20,6 +20,11 @@ internal class PerformanceRepositoryImpl(
 ) : PerformanceRepository {
     override fun getById(id: UUID): Performance = performanceJpaRepository.findByIdOrNull(id)?.domain ?: throw BusinessException(NOT_FOUND)
 
+    override fun getByIdAndRoundId(
+        performanceId: UUID,
+        roundId: UUID,
+    ): Performance = performanceJpaRepository.findByIdAndRoundId(performanceId, roundId)?.domain ?: throw BusinessException(NOT_FOUND)
+
     override fun findByKopisId(kopisId: String): Performance? = performanceJpaRepository.findByKopisId(kopisId)?.domain
 
     override fun findAllWithPagenation(

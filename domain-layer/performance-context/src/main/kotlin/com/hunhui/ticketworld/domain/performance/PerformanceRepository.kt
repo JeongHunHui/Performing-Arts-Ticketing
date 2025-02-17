@@ -5,6 +5,11 @@ import java.util.UUID
 interface PerformanceRepository {
     fun getById(id: UUID): Performance
 
+    fun getByIdAndRoundId(
+        performanceId: UUID,
+        roundId: UUID,
+    ): Performance
+
     fun findByKopisId(kopisId: String): Performance?
 
     fun findAllWithPagenation(

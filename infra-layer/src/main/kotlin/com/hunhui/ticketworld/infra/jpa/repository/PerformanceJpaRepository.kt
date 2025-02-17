@@ -20,4 +20,17 @@ internal interface PerformanceJpaRepository : JpaRepository<PerformanceEntity, U
         """,
     )
     fun findAllOrderByEarliestRound(pageable: Pageable): Page<PerformanceEntity>
+
+    @Query(
+        """
+        SELECT p 
+        FROM PerformanceEntity p 
+        LEFT JOIN p.rounds r 
+        WHERE p.id = :performanceId AND r.id = :roundId
+        """,
+    )
+    fun findByIdAndRoundId(
+        performanceId: UUID,
+        roundId: UUID,
+    ): PerformanceEntity?
 }

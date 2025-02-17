@@ -16,6 +16,16 @@ class FakePerformanceRepository : PerformanceRepository {
 
     override fun getById(id: UUID): Performance = performances[id] ?: throw BusinessException(NOT_FOUND)
 
+    override fun getByIdAndRoundId(
+        performanceId: UUID,
+        roundId: UUID,
+    ): Performance {
+        performances[performanceId]?.let { performance ->
+            if (performance.rounds.any { it.id == roundId }) return performance
+        }
+        throw BusinessException(NOT_FOUND)
+    }
+
     override fun findByKopisId(kopisId: String): Performance? {
         TODO("Not yet implemented")
     }

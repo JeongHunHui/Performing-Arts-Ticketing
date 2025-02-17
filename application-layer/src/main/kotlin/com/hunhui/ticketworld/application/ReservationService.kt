@@ -40,7 +40,7 @@ class ReservationService(
             )
 
         // 예매 가능한 회차인지 확인
-        val performance: Performance = performanceRepository.getById(request.performanceId)
+        val performance: Performance = performanceRepository.getByIdAndRoundId(request.performanceId, reservation.roundId)
         if (!performance.isAvailableRoundId(reservation.roundId)) throw BusinessException(ROUND_NOT_AVAILABLE)
 
         // 예매 가능한 수량인지 확인
