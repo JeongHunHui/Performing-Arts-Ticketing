@@ -100,6 +100,7 @@ class DummyPerformanceService(
                                         createSeatAreas = true,
                                         setCanReservationNow = false,
                                         maxReservationCount = 10,
+                                        schedules = null,
                                     ).first
                                 }
                             } catch (e: Exception) {
@@ -128,6 +129,7 @@ class DummyPerformanceService(
                 createSeatAreas = false,
                 setCanReservationNow = true,
                 maxReservationCount = request.maxReservationCount,
+                schedules = request.schedules,
             )
         if (performanceId == null) return DetailDummyPerformanceCreateResponse(null)
         val seatGrades: List<SeatGrade> = seatGradeRepository.findAllByPerformanceId(performanceId)
@@ -162,6 +164,7 @@ class DummyPerformanceService(
         createSeatAreas: Boolean,
         setCanReservationNow: Boolean,
         maxReservationCount: Int,
+        schedules: List<LocalDateTime>?,
     ): Pair<ProcessStatus, UUID?> {
         val kopisPerformance: KopisPerformance = kopisRepository.getPerformanceById(kopisId)
         val facilityId = kopisPerformance.facilityId
@@ -175,7 +178,7 @@ class DummyPerformanceService(
         }
 
         val scheduleDates =
-            getScheduleDates(
+            schedules ?: getScheduleDates(
                 kopisPerformance.startDate,
                 kopisPerformance.endDate,
                 kopisPerformance.schedules,
