@@ -20,25 +20,18 @@ class TempReservationInternalService(
 ) {
     @Transactional
     internal fun tryTempReserve(request: TempReserveRequest): TempReserveResponse {
-        // 예매할 티켓들과 유저 id로 임시 예매 생성
-        val tickets: List<Ticket> = reservationRepository.getTicketsByIds(request.ticketIds)
-        val reservation =
-            Reservation.createTempReservation(
-                tickets = tickets,
-                userId = request.userId,
-                performanceId = request.performanceId,
-            )
-
         // 예매 가능한 회차인지 확인
-        val performance: Performance = performanceRepository.getByIdAndRoundId(request.performanceId, reservation.roundId)
-        if (!performance.isAvailableRoundId(reservation.roundId)) throw BusinessException(ROUND_NOT_AVAILABLE)
+        val performance: Performance = performanceRepository.getByIdAndRoundId(request.performanceId, request.roundId)
+        if (!performance.isAvailableRoundId(request.roundId)) throw BusinessException(ROUND_NOT_AVAILABLE)
 
         // 예매 가능한 수량인지 확인
-        val paidTicketCount: Int = reservationRepository.getPaidTicketCountByRoundIdAndUserId(reservation.roundId, request.userId)
-        val isReservationCountExceed = performance.maxReservationCount < request.ticketIds.size + paidTicketCount
-        if (isReservationCountExceed) throw BusinessException(RESERVATION_COUNT_EXCEED)
+        if (performance.maxReservationCount < request.ticketIds.size) throw BusinessException(RESERVATION_COUNT_EXCEED)
 
+        // 예매할 티켓들과 유저 id로 임시 예매 생성
+        val tickets: List<Ticket> = reservationRepository.getTicketsByIds(request.ticketIds)
+        val reservation = Reservation.createTempReservation(tickets, request.userId, request.performanceId)
         reservationRepository.save(reservation)
+
         return TempReserveResponse(reservationId = reservation.id)
     }
 }
