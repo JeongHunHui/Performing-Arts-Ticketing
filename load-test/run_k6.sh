@@ -1,8 +1,6 @@
 #!/bin/bash
-# 이 스크립트는 현재 시간의 초가 0초가 될 때까지 대기한 후 첫 번째 k6 명령을 실행합니다.
-# 그리고 2분 후(120초 후) 또 다시 0초에 맞춰 두 번째 k6 명령을 실행합니다.
 
-# 현재 초(sec)를 가져와서 다음 0초까지 대기 시간 계산 (60초 주기)
+# 현재 초(sec)를 가져와서 다음 0초까지 대기 시간 계산
 function wait_for_zero_second() {
   current_sec=$(date +%S)
   # 10진수로 변환 (앞에 0이 있을 경우 문제 방지)
@@ -17,26 +15,20 @@ function wait_for_zero_second() {
   fi
 }
 
-# 첫 번째 실행 전에 0초에 맞춰 대기
-wait_for_zero_second
-
-# 첫 번째 k6 명령 실행
-echo "Starting first k6 run at $(date)"
+echo "Starting warming up at $(date)"
 k6 run \
-  --out influxdb=http://localhost:8086/k6db \
-  --env SLEEP_DURATION=2 \
+  --env SLEEP_DURATION=1 \
   --env PERFORMANCE_ID=23da0b4d-1c87-4ab1-aefe-74344e3bf273 \
   --env ROUND_ID=0440ee0a-ad33-4605-a785-a2b7c46ccab5 \
-  --env MAX_USER=500 \
+  --env MAX_USER=100 \
   ReservationLoadTest.js
 
-# 두 번째 실행: 1분(60초) 대기 후, 다시 0초에 맞춰 실행
-echo "Waiting 1 minutes for the next run..."
-sleep 60
+echo "Waiting 20 seconds for the next run..."
+sleep 20
 
 wait_for_zero_second
 
-echo "Starting second k6 run at $(date)"
+echo "Starting ReservationLoadTest at $(date)"
 k6 run \
   --out influxdb=http://localhost:8086/k6db \
   --env SLEEP_DURATION=2 \

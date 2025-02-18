@@ -313,21 +313,49 @@ export function handleSummary(data) {
     console.info(`📌 예약된 티켓 수: ${reservedSeats}`);
     console.info(`💳 결제된 티켓 수: ${paidSeats}`);
 
-    // 조건 검증 및 추가 로그 출력
     if (reservedSeats > totalSeats) console.error("❌ 예약된 티켓 수가 전체 티켓 수를 초과했습니다!");
     if (paidSeats > totalSeats) console.error("❌ 결제된 티켓 수가 전체 티켓 수를 초과했습니다!");
 
     const percentile = 95;
     const latency = 300;
-    const performanceDetailsDuration = Number(data.metrics.performance_details_duration.values[`p(${percentile})`].toFixed(2));
-    const seatAreasDuration = Number(data.metrics.seat_areas_duration.values[`p(${percentile})`].toFixed(2));
-    const ticketStatusDuration = Number(data.metrics.ticket_status_duration.values[`p(${percentile})`].toFixed(2));
-    const tempReserveDuration = Number(data.metrics.temp_reserve_duration.values[`p(${percentile})`].toFixed(2));
+
+    function formatNumber(num) {
+        return String(num).padStart(5, '0');
+    }
+
+    function getMetric(metricKey) {
+        const metric = data.metrics[metricKey].values;
+        return {
+            count: formatNumber(metric.count),
+            avg: Number(metric.avg.toFixed(2)),
+            p: Number(metric[`p(${percentile})`].toFixed(2))
+        };
+    }
+
+    function printMetric(label, metric, icon = null) {
+        const status = metric.p >= latency ? '❌' : '✅';
+        const displayIcon = icon || status;
+        console.info(`- ${displayIcon} [${label}] 호출 수: ${metric.count} | 평균 응답 시간: ${metric.avg}ms | p${percentile}: ${metric.p}ms`);
+    }
+
+    const overallAvg = Number(data.metrics.http_req_duration.values.avg.toFixed(2));
+
+    const performanceDetails = getMetric('performance_details_duration');
+    const seatAreas = getMetric('seat_areas_duration');
+    const ticketStatus = getMetric('ticket_status_duration');
+    const tempReserve = getMetric('temp_reserve_duration');
+    const discountList = getMetric('discount_list_duration');
+    const paymentStart = getMetric('payment_start_duration');
+    const paymentConfirm = getMetric('payment_confirm_duration');
 
     console.info('📊 API 응답 시간 분석');
-    console.info(`- ${performanceDetailsDuration >= latency ? '❌' : '✅'} 공연 상세 p${percentile}: ${performanceDetailsDuration}ms`);
-    console.info(`- ${seatAreasDuration >= latency ? '❌' : '✅'} 좌석 영역 p${percentile}: ${seatAreasDuration}ms`);
-    console.info(`- ${ticketStatusDuration >= latency ? '❌' : '✅'} 티켓 상태 p${percentile}: ${ticketStatusDuration}ms`);
-    console.info(`- ${tempReserveDuration >= latency ? '❌' : '✅'} 임시 예매 p${percentile}: ${tempReserveDuration}ms`);
-    console.info(`------------------------------`);
+    console.info(`- 전체 평균 응답 시간: ${overallAvg}ms`);
+    printMetric('공연 상세', performanceDetails);
+    printMetric('좌석 영역', seatAreas);
+    printMetric('티켓 상태', ticketStatus);
+    printMetric('임시 예매', tempReserve);
+    printMetric('할인 목록', discountList, '🟨');
+    printMetric('결제 시작', paymentStart, '🟨');
+    printMetric('결제 승인', paymentConfirm, '🟨');
+    console.info('------------------------------');
 }
