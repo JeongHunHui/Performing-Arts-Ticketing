@@ -15,6 +15,7 @@ class Ticket(
     val reservationId: UUID?,
     val isPaid: Boolean,
     val expireTime: LocalDateTime,
+    val version: Long,
 ) {
     companion object {
         fun create(
@@ -32,6 +33,7 @@ class Ticket(
                 reservationId = null,
                 isPaid = false,
                 expireTime = LocalDateTime.now(),
+                version = 0L,
             )
 
         private const val EXPIRE_MINUTES = 7L
@@ -58,6 +60,7 @@ class Ticket(
             reservationId = reservationId,
             isPaid = false,
             expireTime = getExpireTime(),
+            version = version,
         )
     }
 
@@ -72,6 +75,7 @@ class Ticket(
             reservationId = reservationId,
             isPaid = true,
             expireTime = expireTime,
+            version = version,
         )
     }
 

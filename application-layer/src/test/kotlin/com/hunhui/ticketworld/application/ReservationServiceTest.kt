@@ -3,6 +3,7 @@ package com.hunhui.ticketworld.application
 import com.hunhui.ticketworld.application.dto.request.TempReserveRequest
 import com.hunhui.ticketworld.application.dto.response.TempReserveResponse
 import com.hunhui.ticketworld.application.dto.response.TicketListResponse
+import com.hunhui.ticketworld.application.internal.TempReservationInternalService
 import com.hunhui.ticketworld.application.repository.FakePerformanceRepository
 import com.hunhui.ticketworld.application.repository.FakeReservationRepository
 import com.hunhui.ticketworld.common.error.AssertUtil.assertErrorCode
@@ -38,6 +39,7 @@ class ReservationServiceTest {
                 reservationId = null,
                 isPaid = false,
                 expireTime = LocalDateTime.now(),
+                version = 0L,
             )
         val ticket2 =
             Ticket(
@@ -49,6 +51,7 @@ class ReservationServiceTest {
                 reservationId = UUID.randomUUID(),
                 isPaid = true,
                 expireTime = LocalDateTime.now().plusMinutes(10),
+                version = 0L,
             )
 
         // 다른 roundId 혹은 areaId인 티켓 (조회 대상에서 제외되어야 함)
@@ -62,6 +65,7 @@ class ReservationServiceTest {
                 reservationId = null,
                 isPaid = false,
                 expireTime = LocalDateTime.now().plusMinutes(10),
+                version = 0L,
             )
 
         // Fake Repository 생성 및 테스트 데이터 추가
@@ -76,8 +80,12 @@ class ReservationServiceTest {
         // ReservationService 인스턴스 생성
         val reservationService =
             ReservationService(
-                performanceRepository = fakePerformanceRepository,
                 reservationRepository = fakeReservationRepository,
+                tempReservationInternalService =
+                    TempReservationInternalService(
+                        reservationRepository = fakeReservationRepository,
+                        performanceRepository = fakePerformanceRepository,
+                    ),
             )
 
         // When
@@ -148,6 +156,7 @@ class ReservationServiceTest {
                 reservationId = null,
                 isPaid = false,
                 expireTime = now,
+                version = 0L,
             )
         fakeReservationRepository.addTicket(ticket1)
 
@@ -162,6 +171,7 @@ class ReservationServiceTest {
                 reservationId = null,
                 isPaid = false,
                 expireTime = now,
+                version = 0L,
             )
         fakeReservationRepository.addTicket(ticket2)
 
@@ -174,8 +184,12 @@ class ReservationServiceTest {
 
         val reservationService =
             ReservationService(
-                performanceRepository = fakePerformanceRepository,
                 reservationRepository = fakeReservationRepository,
+                tempReservationInternalService =
+                    TempReservationInternalService(
+                        reservationRepository = fakeReservationRepository,
+                        performanceRepository = fakePerformanceRepository,
+                    ),
             )
 
         // When
@@ -231,6 +245,7 @@ class ReservationServiceTest {
                 reservationId = null,
                 isPaid = false,
                 expireTime = now,
+                version = 0L,
             )
         fakeReservationRepo.addTicket(ticket1)
 
@@ -245,6 +260,7 @@ class ReservationServiceTest {
                 reservationId = null,
                 isPaid = false,
                 expireTime = now,
+                version = 0L,
             )
         fakeReservationRepo.addTicket(ticket2)
 
@@ -257,8 +273,12 @@ class ReservationServiceTest {
 
         val reservationService =
             ReservationService(
-                performanceRepository = fakePerformanceRepo,
                 reservationRepository = fakeReservationRepo,
+                tempReservationInternalService =
+                    TempReservationInternalService(
+                        reservationRepository = fakeReservationRepo,
+                        performanceRepository = fakePerformanceRepo,
+                    ),
             )
 
         // When & Then: 예매 가능 수량 초과 시 BusinessException이 발생해야 함
@@ -313,6 +333,7 @@ class ReservationServiceTest {
                 reservationId = null,
                 isPaid = false,
                 expireTime = now,
+                version = 0L,
             )
         fakeReservationRepo.addTicket(ticket)
 
@@ -325,8 +346,12 @@ class ReservationServiceTest {
 
         val reservationService =
             ReservationService(
-                performanceRepository = fakePerformanceRepo,
                 reservationRepository = fakeReservationRepo,
+                tempReservationInternalService =
+                    TempReservationInternalService(
+                        reservationRepository = fakeReservationRepo,
+                        performanceRepository = fakePerformanceRepo,
+                    ),
             )
 
         // When & Then: 예매 가능한 회차가 아니므로 BusinessException 발생
