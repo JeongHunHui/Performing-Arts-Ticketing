@@ -11,6 +11,21 @@ const discountListDurations = new Trend("discount_list_duration");
 const paymentStartDurations = new Trend("payment_start_duration");
 const paymentConfirmDurations = new Trend("payment_confirm_duration");
 
+const performanceDetailsSCount = new Counter("performance_details_duration_s_count");
+const performanceDetailsFCount = new Counter("performance_details_duration_f_count");
+const seatAreasSCount = new Counter("seat_areas_duration_s_count");
+const seatAreasFCount = new Counter("seat_areas_duration_f_count");
+const ticketStatusSCount = new Counter("ticket_status_duration_s_count");
+const ticketStatusFCount = new Counter("ticket_status_duration_f_count");
+const tempReserveSCount = new Counter("temp_reserve_duration_s_count");
+const tempReserveFCount = new Counter("temp_reserve_duration_f_count");
+const discountListSCount = new Counter("discount_list_duration_s_count");
+const discountListFCount = new Counter("discount_list_duration_f_count");
+const paymentStartSCount = new Counter("payment_start_duration_s_count");
+const paymentStartFCount = new Counter("payment_start_duration_f_count");
+const paymentConfirmSCount = new Counter("payment_confirm_duration_s_count");
+const paymentConfirmFCount = new Counter("payment_confirm_duration_f_count");
+
 const totalSeatScale = new Counter("total_seat_scale");
 const reservedTicketCounts = new Counter("reserved_ticket_counts");
 const paidTicketCounts = new Counter("paid_ticket_counts");
@@ -53,7 +68,13 @@ function getRandomElements(arr, n) {
 }
 
 /** API 호출 결과를 검사하고 실패 시 에러 출력 */
-function checkOrFail(res, message) {
+function checkOrFail(res, message, successCounter, failCounter) {
+    if (res.status !== 200) {
+        failCounter.add(1);
+    } else {
+        successCounter.add(1);
+    }
+
     if (!check(res, {[`${message} 성공`]: (r) => r.status === 200})) {
         const data = res.json();
         if (data.code && data.message) {
@@ -184,13 +205,13 @@ export default function (data) {
 
     // 0-2. 공연 정보 조회
     const performanceDetailsRes = requestPerformanceDetails(currentPerformanceId);
-    checkOrFail(performanceDetailsRes, '공연 정보 조회');
+    checkOrFail(performanceDetailsRes, '공연 정보 조회', performanceDetailsSCount, performanceDetailsFCount);
     const maxReservationCount = performanceDetailsRes.json().maxReservationCount;
     const ticketCount = chooseTicketCount(maxReservationCount);
 
     // 0-3. 좌석 영역 조회
     const seatAreasRes = requestSeatAreas(currentPerformanceId);
-    checkOrFail(seatAreasRes, '좌석 영역 조회');
+    checkOrFail(seatAreasRes, '좌석 영역 조회', seatAreasSCount, seatAreasFCount);
     const seatAreas = seatAreasRes.json().seatAreas;
 
     // ---------- 1. 좌석 선택 단계 ----------
@@ -213,7 +234,7 @@ export default function (data) {
         while (true) {
             // 1-2. 티켓 예매 여부 조회
             const ticketStatusRes = requestTicketStatus(currentRoundId, area.id);
-            checkOrFail(ticketStatusRes, '티켓 예매 여부');
+            checkOrFail(ticketStatusRes, '티켓 예매 여부', ticketStatusSCount, ticketStatusFCount);
             const availableTickets = ticketStatusRes.json().tickets.filter(ticket => ticket.canReserve);
             if (availableTickets.length === 0) break; // 1-1부터 재시도 (다른 영역 선택)
 
@@ -234,9 +255,11 @@ export default function (data) {
                 reservationId = data.reservationId;
                 reservedTicketCounts.add(ticketIds.length);
                 info(`임시 예매 성공: ${data.reservationId}\n예매한 티켓 목록: ${ticketIds.join(', ')}`);
+                tempReserveSCount.add(1);
                 break; // 좌석 선택 단계 종료
             } else {
                 const responseData = tempReserveRes.json()
+                tempReserveFCount.add(1);
                 if (responseData.code === 'RE001') {
                     error(`임시 예매 실패: [${tempReserveRes.json().code}] ${tempReserveRes.json().message}`);
                     break; // 예매 가능 수량을 초과하는 경우 종료
@@ -253,7 +276,7 @@ export default function (data) {
     // ---------- 2. 할인 선택 단계 ----------
     // 2-1. 할인 목록 API 호출
     const discountListRes = requestDiscountList(selectedTickets);
-    checkOrFail(discountListRes, '할인 목록 조회');
+    checkOrFail(discountListRes, '할인 목록 조회', discountListSCount, discountListFCount);
 
     // 2-2. 할인 적용 및 결제 페이지 이동
     // 할인 적용 Think Time
@@ -282,7 +305,7 @@ export default function (data) {
 
     // 3-2. 결제 시작 API 호출
     const paymentStartRes = requestPaymentStart(reservationId, paymentItems, currentPaymentMethod, currentUserId);
-    checkOrFail(paymentStartRes, '결제 시작');
+    checkOrFail(paymentStartRes, '결제 시작', paymentStartSCount, paymentStartFCount);
     const paymentId = paymentStartRes.json().paymentId;
 
     // 3-3. 결제 진행
@@ -294,9 +317,10 @@ export default function (data) {
     const paymentConfirmRes = requestPaymentConfirm(paymentId, currentUserId, reservationId);
     if (paymentConfirmRes.json().code === 'RE001') {
         error(`결제 승인 실패: [${paymentConfirmRes.json().code}] ${paymentConfirmRes.json().message}`);
+        paymentConfirmFCount.add(1);
         return; // 예매 가능 수량을 초과하는 경우 종료
     }
-    checkOrFail(paymentConfirmRes, '결제 승인');
+    checkOrFail(paymentConfirmRes, '결제 승인', paymentConfirmSCount, paymentConfirmFCount);
     info(`사용자 ${currentUserId}가 ${selectedTickets.length}개의 티켓을 결제하였습니다!`);
     userReservationCount.add(selectedTickets.length, { userId: currentUserId });
     paidTicketCounts.add(selectedTickets.length);
@@ -309,33 +333,39 @@ export function handleSummary(data) {
 
     console.info(`---------- 테스트 결과 ----------`);
     console.info(`🏁 종료 시간: ${new Date().toLocaleString('ko-KR', {})}`);
+    console.info(`performanceId: ${performanceId}`);
+    console.info(`roundId: ${roundId}`);
+    console.info(`maxUserCount: ${maxUserCount}`);
     console.info(`🎟 총 티켓 수: ${totalSeats}`);
     console.info(`📌 예약된 티켓 수: ${reservedSeats}`);
     console.info(`💳 결제된 티켓 수: ${paidSeats}`);
 
-    if (reservedSeats > totalSeats) console.error("❌ 예약된 티켓 수가 전체 티켓 수를 초과했습니다!");
-    if (paidSeats > totalSeats) console.error("❌ 결제된 티켓 수가 전체 티켓 수를 초과했습니다!");
+    if (reservedSeats > totalSeats) console.error("🟥 예약된 티켓 수가 전체 티켓 수를 초과했습니다!");
+    if (paidSeats > totalSeats) console.error("🟥 결제된 티켓 수가 전체 티켓 수를 초과했습니다!");
 
     const percentile = 95;
     const latency = 300;
 
-    function formatNumber(num) {
-        return String(num).padStart(5, '0');
+    function formatNumber(num, n) {
+        return String(num).padStart(n, ' ');
     }
 
     function getMetric(metricKey) {
         const metric = data.metrics[metricKey].values;
+        const sCount = data.metrics[`${metricKey}_s_count`] || {values: {count: 0}};
+        const fCount = data.metrics[`${metricKey}_f_count`] || {values: {count: 0}};
         return {
-            count: formatNumber(metric.count),
-            avg: Number(metric.avg.toFixed(2)),
-            p: Number(metric[`p(${percentile})`].toFixed(2))
+            sCount: formatNumber(sCount.values.count || 0, 5),
+            fCount: formatNumber(fCount.values.count || 0, 5),
+            avg: formatNumber(Number(metric.avg.toFixed(2) || 0), 6),
+            p: formatNumber(Number(metric[`p(${percentile})`].toFixed(2) || 0), 6)
         };
     }
 
-    function printMetric(label, metric, icon = null) {
-        const status = metric.p >= latency ? '❌' : '✅';
+    function printMetric(label, metric, icon) {
+        const status = metric.p >= latency ? '🟥' : '🟩';
         const displayIcon = icon || status;
-        console.info(`- ${displayIcon} [${label}] 호출 수: ${metric.count} | 평균 응답 시간: ${metric.avg}ms | p${percentile}: ${metric.p}ms`);
+        console.info(`${displayIcon} [${label}] 성공: ${metric.sCount} | 실패: ${metric.fCount} | 평균: ${metric.avg}ms | p${percentile}: ${metric.p}ms`)
     }
 
     const overallAvg = Number(data.metrics.http_req_duration.values.avg.toFixed(2));
@@ -348,8 +378,7 @@ export function handleSummary(data) {
     const paymentStart = getMetric('payment_start_duration');
     const paymentConfirm = getMetric('payment_confirm_duration');
 
-    console.info('📊 API 응답 시간 분석');
-    console.info(`- 전체 평균 응답 시간: ${overallAvg}ms`);
+    console.info(`📊 API 응답 시간 분석 (avg: ${overallAvg}ms)`);
     printMetric('공연 상세', performanceDetails);
     printMetric('좌석 영역', seatAreas);
     printMetric('티켓 상태', ticketStatus);

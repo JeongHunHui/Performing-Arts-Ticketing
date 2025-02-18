@@ -1,9 +1,23 @@
 #!/bin/bash
+# 사용법: ./run_tests.sh <performanceId> <warmingUpRoundId> <mainRoundId> <mysqlContainerName> <mysqlUser> <mysqlPassword> <mysqlDatabase> <maxUser>
 
-# 현재 초(sec)를 가져와서 다음 0초까지 대기 시간 계산
+if [ "$#" -ne 8 ]; then
+  echo "Usage: $0 <performanceId> <warmingUpRoundId> <mainRoundId> <mysqlContainerName> <mysqlUser> <mysqlPassword> <mysqlDatabase> <maxUser>"
+  exit 1
+fi
+
+PERFORMANCE_ID=$1
+WARMING_UP_ROUND_ID=$2
+MAIN_ROUND_ID=$3
+MYSQL_CONTAINER_NAME=$4
+MYSQL_USER=$5
+MYSQL_PASSWORD=$6
+MYSQL_DATABASE=$7
+MAX_USER=$8
+
+# 현재 초(sec)를 가져와서 다음 0초까지 대기 시간 계산 함수
 function wait_for_zero_second() {
   current_sec=$(date +%S)
-  # 10진수로 변환 (앞에 0이 있을 경우 문제 방지)
   current_sec=$((10#$current_sec))
   sleep_time=$((60 - current_sec))
   if [ $sleep_time -eq 60 ]; then
@@ -17,9 +31,9 @@ function wait_for_zero_second() {
 
 echo "Starting warming up at $(date)"
 k6 run \
-  --env SLEEP_DURATION=1 \
-  --env PERFORMANCE_ID=23da0b4d-1c87-4ab1-aefe-74344e3bf273 \
-  --env ROUND_ID=0440ee0a-ad33-4605-a785-a2b7c46ccab5 \
+  --env SLEEP_DURATION=0.5 \
+  --env PERFORMANCE_ID=$PERFORMANCE_ID \
+  --env ROUND_ID=$WARMING_UP_ROUND_ID \
   --env MAX_USER=100 \
   ReservationLoadTest.js
 
@@ -32,7 +46,39 @@ echo "Starting ReservationLoadTest at $(date)"
 k6 run \
   --out influxdb=http://localhost:8086/k6db \
   --env SLEEP_DURATION=2 \
-  --env PERFORMANCE_ID=23da0b4d-1c87-4ab1-aefe-74344e3bf273 \
-  --env ROUND_ID=e2c1ea31-bdff-4023-8e02-3123486f7709 \
-  --env MAX_USER=500 \
+  --env PERFORMANCE_ID=$PERFORMANCE_ID \
+  --env ROUND_ID=$MAIN_ROUND_ID \
+  --env MAX_USER=$MAX_USER \
   ReservationLoadTest.js
+
+echo "Executing cleanup SQL query..."
+docker exec -i "$MYSQL_CONTAINER_NAME" mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" <<EOF
+START TRANSACTION;
+SET @performanceId = UUID_TO_BIN('$PERFORMANCE_ID');
+DELETE FROM payment_item pi
+WHERE pi.payment_id IN (
+    SELECT r.payment_id FROM reservation r
+    WHERE r.performance_id = @performanceId OR
+          pi.payment_id IN (
+              SELECT p.id FROM payment p
+              WHERE p.status = 'PENDING'
+          )
+);
+DELETE FROM payment p
+WHERE p.id IN (
+    SELECT r.payment_id FROM reservation r
+    WHERE r.performance_id = @performanceId OR
+          p.status = 'PENDING'
+);
+UPDATE ticket
+SET is_paid = FALSE,
+    reservation_id = NULL,
+    expire_time = NOW()
+WHERE reservation_id IN (
+    SELECT r.id FROM reservation r
+    WHERE performance_id = @performanceId
+);
+DELETE FROM reservation
+WHERE performance_id = @performanceId;
+COMMIT;
+EOF
