@@ -4,9 +4,11 @@ import com.hunhui.ticketworld.common.error.BusinessException
 import com.hunhui.ticketworld.domain.reservation.Reservation
 import com.hunhui.ticketworld.domain.reservation.ReservationRepository
 import com.hunhui.ticketworld.domain.reservation.Ticket
+import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode.CANNOT_TEMP_RESERVE
 import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode.NOT_FOUND
 import com.hunhui.ticketworld.infra.jpa.entity.ReservationEntity
 import com.hunhui.ticketworld.infra.jpa.entity.TicketEntity
+import jakarta.persistence.OptimisticLockException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
 import java.util.UUID
@@ -26,7 +28,11 @@ internal class ReservationRepositoryImpl(
     ): List<Ticket> = ticketJpaRepository.findAllByPerformanceRoundIdAndSeatAreaId(performanceRoundId, seatAreaId).map { it.domain }
 
     override fun save(reservation: Reservation) {
-        reservationJpaRepository.save(reservation.entity)
+        try {
+            reservationJpaRepository.save(reservation.entity)
+        } catch (e: OptimisticLockException) {
+            throw BusinessException(CANNOT_TEMP_RESERVE)
+        }
     }
 
     override fun saveNewTickets(tickets: List<Ticket>) {

@@ -4,6 +4,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import jakarta.persistence.Version
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -27,4 +28,7 @@ internal class TicketEntity(
     val isPaid: Boolean,
     @Column(name = "expire_time", nullable = false)
     val expireTime: LocalDateTime,
+    @Version
+    @Column(name = "version")
+    val version: Long? = 0L,
 ) : BaseTimeEntity()
