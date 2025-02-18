@@ -5,6 +5,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.persistence.Version
+import org.hibernate.annotations.ColumnDefault
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -30,5 +31,6 @@ internal class TicketEntity(
     val expireTime: LocalDateTime,
     @Version
     @Column(name = "version")
-    val version: Long? = 0L,
+    @ColumnDefault("0")
+    val version: Long = 0L,
 ) : BaseTimeEntity()

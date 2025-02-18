@@ -8,8 +8,10 @@ import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode.
 import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode.NOT_FOUND
 import com.hunhui.ticketworld.infra.jpa.entity.ReservationEntity
 import com.hunhui.ticketworld.infra.jpa.entity.TicketEntity
-import jakarta.persistence.OptimisticLockException
+import jakarta.persistence.LockModeType
+import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.stereotype.Repository
 import java.util.UUID
 
@@ -27,10 +29,34 @@ internal class ReservationRepositoryImpl(
         seatAreaId: UUID,
     ): List<Ticket> = ticketJpaRepository.findAllByPerformanceRoundIdAndSeatAreaId(performanceRoundId, seatAreaId).map { it.domain }
 
+    @Lock(LockModeType.OPTIMISTIC)
     override fun save(reservation: Reservation) {
         try {
-            reservationJpaRepository.save(reservation.entity)
-        } catch (e: OptimisticLockException) {
+            reservationJpaRepository.save(
+                ReservationEntity(
+                    id = reservation.id,
+                    performanceId = reservation.performanceId,
+                    userId = reservation.userId,
+                    paymentId = reservation.paymentId,
+                    tickets =
+                        reservation.tickets.map {
+                            TicketEntity(
+                                id = it.id,
+                                performanceRoundId = it.performanceRoundId,
+                                seatAreaId = it.seatAreaId,
+                                seatPositionId = it.seatPositionId,
+                                seatGradeId = it.seatGradeId,
+                                reservationId = it.reservationId,
+                                isPaid = it.isPaid,
+                                expireTime = it.expireTime,
+                                // 영속성 컨텍스트에서 가져와서 실제 쿼리 호출이 발생하지 않음
+                                version = ticketJpaRepository.findByIdOrNull(it.id)?.version ?: throw BusinessException(NOT_FOUND),
+                            )
+                        },
+                    date = reservation.date,
+                ),
+            )
+        } catch (e: ObjectOptimisticLockingFailureException) {
             throw BusinessException(CANNOT_TEMP_RESERVE)
         }
     }
