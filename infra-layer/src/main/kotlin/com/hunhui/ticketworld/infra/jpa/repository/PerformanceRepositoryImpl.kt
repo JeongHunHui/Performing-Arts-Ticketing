@@ -10,7 +10,6 @@ import com.hunhui.ticketworld.infra.jpa.entity.PerformanceEntity
 import com.hunhui.ticketworld.infra.jpa.entity.PerformanceRoundEntity
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
 import java.util.UUID
 

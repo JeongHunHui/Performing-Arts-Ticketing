@@ -8,13 +8,23 @@ import org.springframework.data.jpa.repository.Query
 import java.util.UUID
 
 internal interface PerformanceJpaRepository : JpaRepository<PerformanceEntity, UUID> {
+    @Query(
+        """
+        SELECT p 
+        FROM PerformanceEntity p 
+        LEFT JOIN FETCH p.rounds r 
+        WHERE p.id = :id
+        """,
+    )
+    fun findByIdOrNull(id: UUID): PerformanceEntity?
+
     fun findByKopisId(kopisId: String): PerformanceEntity?
 
     @Query(
         """
         SELECT p 
         FROM PerformanceEntity p 
-        LEFT JOIN p.rounds r 
+        LEFT JOIN FETCH p.rounds r 
         GROUP BY p 
         ORDER BY MIN(r.roundStartTime) ASC
         """,
@@ -25,7 +35,7 @@ internal interface PerformanceJpaRepository : JpaRepository<PerformanceEntity, U
         """
         SELECT p 
         FROM PerformanceEntity p 
-        LEFT JOIN p.rounds r 
+        LEFT JOIN FETCH p.rounds r 
         WHERE p.id = :performanceId AND r.id = :roundId
         """,
     )

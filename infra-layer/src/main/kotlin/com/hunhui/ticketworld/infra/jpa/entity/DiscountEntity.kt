@@ -27,7 +27,7 @@ internal class DiscountEntity(
     @OneToMany(
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
-        fetch = FetchType.EAGER,
+        fetch = FetchType.LAZY,
     )
     @JoinColumn(name = "discount_id")
     val discountConditions: List<DiscountConditionEntity> = listOf(),
