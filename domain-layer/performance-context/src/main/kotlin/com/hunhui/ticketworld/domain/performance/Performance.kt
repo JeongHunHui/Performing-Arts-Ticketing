@@ -10,12 +10,10 @@ class Performance(
     val id: UUID,
     val info: PerformanceInfo,
     val maxReservationCount: Int,
+    val startDate: LocalDate,
+    val finishDate: LocalDate,
     val rounds: List<PerformanceRound>,
 ) {
-    init {
-        if (rounds.isEmpty()) throw BusinessException(ROUND_IS_EMPTY)
-    }
-
     companion object {
         fun create(
             performanceInfo: PerformanceInfo,
@@ -27,13 +25,11 @@ class Performance(
                 info = performanceInfo,
                 maxReservationCount = maxReservationCount,
                 rounds = rounds,
+                startDate = rounds.minOfOrNull { it.roundStartTime.toLocalDate() } ?: throw BusinessException(ROUND_IS_EMPTY),
+                finishDate = rounds.maxOfOrNull { it.roundStartTime.toLocalDate() } ?: throw BusinessException(ROUND_IS_EMPTY),
             )
     }
 
-    val startDate: LocalDate
-        get() = rounds.minOf { it.roundStartTime.toLocalDate() }
-    val finishDate: LocalDate
-        get() = rounds.maxOf { it.roundStartTime.toLocalDate() }
     val availableRounds: List<PerformanceRound>
         get() = rounds.filter { it.isReservationAvailable }
     val minimumReservationStartTime: LocalDateTime

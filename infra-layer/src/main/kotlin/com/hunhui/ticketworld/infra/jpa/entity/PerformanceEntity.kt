@@ -11,6 +11,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
+import java.time.LocalDate
 import java.util.UUID
 
 @Entity
@@ -49,6 +50,10 @@ internal class PerformanceEntity(
     val description: String,
     @Column(name = "max_reservation_count", nullable = false)
     val maxReservationCount: Int,
+    @Column(name = "start_date", nullable = false)
+    val startDate: LocalDate,
+    @Column(name = "finish_date", nullable = false)
+    val finishDate: LocalDate,
     @OneToMany(
         cascade = [CascadeType.ALL],
         orphanRemoval = true,

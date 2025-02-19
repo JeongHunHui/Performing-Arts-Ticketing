@@ -60,6 +60,8 @@ internal class PerformanceRepositoryImpl(
                         description = description,
                     ),
                 maxReservationCount = maxReservationCount,
+                startDate = startDate,
+                finishDate = finishDate,
                 rounds = rounds.map { it.domain },
             )
 
@@ -91,6 +93,8 @@ internal class PerformanceRepositoryImpl(
                 descriptionImageUrls = info.descriptionImageUrls.joinToString("|"),
                 description = info.description,
                 maxReservationCount = maxReservationCount,
+                startDate = startDate,
+                finishDate = finishDate,
                 rounds =
                     rounds.map {
                         PerformanceRoundEntity(

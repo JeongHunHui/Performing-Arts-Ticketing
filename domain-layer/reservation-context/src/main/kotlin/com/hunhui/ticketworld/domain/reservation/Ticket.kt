@@ -41,10 +41,6 @@ class Ticket(
         private fun getExpireTime(): LocalDateTime = LocalDateTime.now().plusMinutes(EXPIRE_MINUTES)
     }
 
-    /** 만료시간이 없거나 이미 지났으면 true */
-    internal val isExpired: Boolean
-        get() = expireTime.isBefore(LocalDateTime.now())
-
     /** 결제되지 않은 티켓이고 만료되었으면 true */
     val canTempReserve: Boolean
         get() = !isPaid && isExpired
@@ -78,6 +74,10 @@ class Ticket(
             version = version,
         )
     }
+
+    /** 만료시간이 없거나 이미 지났으면 true */
+    private val isExpired: Boolean
+        get() = expireTime.isBefore(LocalDateTime.now())
 
     private val canConfirmReserve: Boolean
         get() = !isPaid && !isExpired

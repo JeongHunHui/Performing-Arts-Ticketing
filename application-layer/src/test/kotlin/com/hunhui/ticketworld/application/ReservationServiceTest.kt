@@ -142,6 +142,8 @@ class ReservationServiceTest {
                     ),
                 maxReservationCount = 10,
                 rounds = listOf(availableRound),
+                startDate = availableRound.roundStartTime.toLocalDate(),
+                finishDate = availableRound.roundStartTime.toLocalDate(),
             )
         fakePerformanceRepository.save(performance)
 
@@ -232,6 +234,8 @@ class ReservationServiceTest {
                     ),
                 maxReservationCount = 1,
                 rounds = listOf(availableRound),
+                startDate = availableRound.roundStartTime.toLocalDate(),
+                finishDate = availableRound.roundStartTime.toLocalDate(),
             )
         fakePerformanceRepo.save(performance)
 
@@ -321,6 +325,8 @@ class ReservationServiceTest {
                     ),
                 maxReservationCount = 10,
                 rounds = listOf(notAvailableRound),
+                startDate = notAvailableRound.reservationStartTime.toLocalDate(),
+                finishDate = notAvailableRound.reservationStartTime.toLocalDate(),
             )
         fakePerformanceRepo.save(performance)
 

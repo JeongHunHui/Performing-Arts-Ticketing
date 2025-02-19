@@ -25,7 +25,7 @@ internal class ReservationEntity(
     val paymentId: UUID?,
     @OneToMany(
         cascade = [CascadeType.ALL],
-        orphanRemoval = true,
+        orphanRemoval = false,
         fetch = FetchType.EAGER,
     )
     @JoinColumn(name = "reservation_id")

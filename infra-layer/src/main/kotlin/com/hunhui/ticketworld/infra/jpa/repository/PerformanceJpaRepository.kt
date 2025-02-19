@@ -22,12 +22,11 @@ internal interface PerformanceJpaRepository : JpaRepository<PerformanceEntity, U
 
     @Query(
         """
-        SELECT p 
+        SELECT DISTINCT p
         FROM PerformanceEntity p 
         LEFT JOIN FETCH p.rounds r 
-        GROUP BY p 
-        ORDER BY MIN(r.roundStartTime) ASC
-        """,
+        ORDER BY p.startDate ASC
+    """,
     )
     fun findAllOrderByEarliestRound(pageable: Pageable): Page<PerformanceEntity>
 
