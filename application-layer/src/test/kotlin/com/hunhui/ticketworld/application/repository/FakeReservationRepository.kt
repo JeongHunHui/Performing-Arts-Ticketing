@@ -30,6 +30,15 @@ class FakeReservationRepository : ReservationRepository {
 
     override fun getById(id: UUID): Reservation = reservations[id] ?: throw BusinessException(ReservationErrorCode.NOT_FOUND)
 
+    override fun getByIdWithPessimistic(id: UUID): Reservation = reservations[id] ?: throw BusinessException(ReservationErrorCode.NOT_FOUND)
+
+    override fun getTicketsByIdsWithPessimistic(ids: List<UUID>): List<Ticket> =
+        tickets
+            .filter { (id, _) ->
+                id in ids
+            }.values
+            .toList()
+
     override fun getTicketsByIds(ids: List<UUID>): List<Ticket> =
         tickets
             .filter { (id, _) ->
@@ -49,8 +58,13 @@ class FakeReservationRepository : ReservationRepository {
         TODO("Not yet implemented")
     }
 
-    override fun getPaidTicketCountByRoundIdAndUserId(
+    override fun getPaidTicketsByRoundIdAndUserId(
         roundId: UUID,
         userId: UUID,
-    ): Int = 0
+    ): List<Ticket> = emptyList()
+
+    override fun getPaidTicketsByRoundIdAndUserIdWithPessimistic(
+        roundId: UUID,
+        userId: UUID,
+    ): List<Ticket> = emptyList()
 }

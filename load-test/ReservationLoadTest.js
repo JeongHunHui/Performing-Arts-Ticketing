@@ -36,6 +36,9 @@ const sleepDuration = Number(__ENV.SLEEP_DURATION) || 1;
 const activateLog = Boolean(__ENV.ACTIVATE_LOG) || false;
 const performanceId = __ENV.PERFORMANCE_ID;
 const roundId = __ENV.ROUND_ID;
+const tempReserveLock = __ENV.TEMP_RESERVE_LOCK;
+const selectReservationLock = __ENV.SELECT_RESERVATION_LOCK;
+const selectTicketsLock = __ENV.SELECT_TICKETS_LOCK;
 const maxUserCount = Number(__ENV.MAX_USER);
 
 /** 확률에 따라 예약할 티켓 수 결정 (1:40%, 2:30%, 3:20%, 4:10%)
@@ -110,7 +113,8 @@ function requestTempReserve(performanceId, userId, ticketIds) {
         JSON.stringify({
             performanceId: performanceId,
             userId: userId,
-            ticketIds: ticketIds
+            ticketIds: ticketIds,
+            lockMode: tempReserveLock,
         }),
         { headers: { 'Content-Type': 'application/json' } }
     );
@@ -150,6 +154,8 @@ function requestPaymentConfirm(paymentId, userId, reservationId) {
             paymentId: paymentId,
             userId: userId,
             reservationId: reservationId,
+            selectReservationLockMode: selectReservationLock,
+            selectTicketsLockMode: selectTicketsLock,
         }),
         { headers: { 'Content-Type': 'application/json' } }
     );

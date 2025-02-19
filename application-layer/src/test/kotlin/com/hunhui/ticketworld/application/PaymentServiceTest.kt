@@ -1,7 +1,10 @@
 package com.hunhui.ticketworld.application
 
+import com.hunhui.ticketworld.application.dto.request.LockMode
+import com.hunhui.ticketworld.application.dto.request.PaymentCompleteRequest
 import com.hunhui.ticketworld.application.dto.request.PaymentStartRequest
 import com.hunhui.ticketworld.application.dto.response.PaymentStartResponse
+import com.hunhui.ticketworld.application.internal.ConfirmPaymentInternalService
 import com.hunhui.ticketworld.application.repository.FakePaymentRepository
 import com.hunhui.ticketworld.application.repository.FakePerformanceRepository
 import com.hunhui.ticketworld.application.repository.FakeReservationRepository
@@ -77,10 +80,15 @@ class PaymentServiceTest {
 
         val paymentService =
             PaymentService(
-                performanceRepository = performanceRepository,
                 reservationRepository = reservationRepository,
                 seatGradeRepository = seatGradeRepository,
                 paymentRepository = paymentRepository,
+                confirmPaymentInternalService =
+                    ConfirmPaymentInternalService(
+                        reservationRepository = reservationRepository,
+                        paymentRepository = paymentRepository,
+                        performanceRepository = performanceRepository,
+                    ),
             )
 
         // PaymentStartRequest 작성: 예매된 좌석 등급에 대해 2매 결제 요청, 할인 id는 null
@@ -163,10 +171,15 @@ class PaymentServiceTest {
 
         val paymentService =
             PaymentService(
-                performanceRepository = performanceRepository,
                 reservationRepository = reservationRepository,
                 seatGradeRepository = seatGradeRepository,
                 paymentRepository = paymentRepository,
+                confirmPaymentInternalService =
+                    ConfirmPaymentInternalService(
+                        reservationRepository = reservationRepository,
+                        paymentRepository = paymentRepository,
+                        performanceRepository = performanceRepository,
+                    ),
             )
 
         // PaymentStartRequest 작성: 2매 결제 요청하지만 Reservation에는 1매만 있음
@@ -227,6 +240,8 @@ class PaymentServiceTest {
                     ),
                 maxReservationCount = 100,
                 rounds = listOf(availableRound),
+                startDate = availableRound.roundStartTime.toLocalDate(),
+                finishDate = availableRound.roundStartTime.toLocalDate(),
             )
 
         // Reservation 생성 (예매 2매)
@@ -252,18 +267,25 @@ class PaymentServiceTest {
 
         // PaymentCompleteRequest 작성
         val request =
-            com.hunhui.ticketworld.application.dto.request.PaymentCompleteRequest(
+            PaymentCompleteRequest(
                 paymentId = payment.id,
                 userId = userId,
                 reservationId = reservation.id,
+                selectReservationLockMode = LockMode.OPTIMISTIC,
+                selectTicketsLockMode = LockMode.OPTIMISTIC,
             )
 
         val paymentService =
             PaymentService(
-                performanceRepository = performanceRepository,
                 reservationRepository = reservationRepository,
                 seatGradeRepository = FakeSeatGradeRepository(),
                 paymentRepository = paymentRepository,
+                confirmPaymentInternalService =
+                    ConfirmPaymentInternalService(
+                        reservationRepository = reservationRepository,
+                        paymentRepository = paymentRepository,
+                        performanceRepository = performanceRepository,
+                    ),
             )
 
         // Act
@@ -315,6 +337,8 @@ class PaymentServiceTest {
                     ),
                 maxReservationCount = 100,
                 rounds = listOf(notAvailableRound),
+                startDate = notAvailableRound.roundStartTime.toLocalDate(),
+                finishDate = notAvailableRound.roundStartTime.toLocalDate(),
             )
 
         // Reservation 생성 (예매 2매)
@@ -338,18 +362,25 @@ class PaymentServiceTest {
         val performanceRepository = FakePerformanceRepository().apply { this.save(performance) }
 
         val request =
-            com.hunhui.ticketworld.application.dto.request.PaymentCompleteRequest(
+            PaymentCompleteRequest(
                 paymentId = payment.id,
                 userId = userId,
                 reservationId = reservation.id,
+                selectReservationLockMode = LockMode.OPTIMISTIC,
+                selectTicketsLockMode = LockMode.OPTIMISTIC,
             )
 
         val paymentService =
             PaymentService(
-                performanceRepository = performanceRepository,
                 reservationRepository = reservationRepository,
                 seatGradeRepository = FakeSeatGradeRepository(),
                 paymentRepository = paymentRepository,
+                confirmPaymentInternalService =
+                    ConfirmPaymentInternalService(
+                        reservationRepository = reservationRepository,
+                        paymentRepository = paymentRepository,
+                        performanceRepository = performanceRepository,
+                    ),
             )
 
         // Act & Assert

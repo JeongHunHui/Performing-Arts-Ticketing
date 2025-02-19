@@ -3,25 +3,25 @@ package com.hunhui.ticketworld.application
 import com.hunhui.ticketworld.application.dto.request.PaymentCompleteRequest
 import com.hunhui.ticketworld.application.dto.request.PaymentStartRequest
 import com.hunhui.ticketworld.application.dto.response.PaymentStartResponse
+import com.hunhui.ticketworld.application.internal.ConfirmPaymentInternalService
 import com.hunhui.ticketworld.common.error.BusinessException
 import com.hunhui.ticketworld.domain.payment.Payment
 import com.hunhui.ticketworld.domain.payment.PaymentRepository
-import com.hunhui.ticketworld.domain.performance.PerformanceRepository
-import com.hunhui.ticketworld.domain.performance.exception.PerformanceErrorCode.ROUND_NOT_AVAILABLE
+import com.hunhui.ticketworld.domain.payment.exception.PaymentErrorCode.CANNOT_COMPLETE
 import com.hunhui.ticketworld.domain.reservation.Reservation
 import com.hunhui.ticketworld.domain.reservation.ReservationRepository
-import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode.RESERVATION_COUNT_EXCEED
 import com.hunhui.ticketworld.domain.seatgrade.SeatGrade
 import com.hunhui.ticketworld.domain.seatgrade.SeatGradeRepository
+import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class PaymentService(
-    private val performanceRepository: PerformanceRepository,
     private val reservationRepository: ReservationRepository,
     private val seatGradeRepository: SeatGradeRepository,
     private val paymentRepository: PaymentRepository,
+    private val confirmPaymentInternalService: ConfirmPaymentInternalService,
 ) {
     @Transactional
     fun startPayment(request: PaymentStartRequest): PaymentStartResponse {
@@ -53,28 +53,10 @@ class PaymentService(
         return PaymentStartResponse(paymentId = payment.id, totalAmount = payment.totalAmount.amount)
     }
 
-    @Transactional
-    fun completePayment(request: PaymentCompleteRequest) {
-        // TODO: 외부 결제 서버에 데이터 검증 요청
-
-        // 예매 조회
-        val reservation: Reservation = reservationRepository.getById(request.reservationId)
-
-        // 예매 가능한 회차인지 확인
-        val performance = performanceRepository.getByIdAndRoundId(reservation.performanceId, reservation.roundId)
-        if (!performance.isAvailableRoundId(reservation.roundId)) throw BusinessException(ROUND_NOT_AVAILABLE)
-
-        // 예매 가능한 수량인지 확인
-        val paidTicketCount: Int = reservationRepository.getPaidTicketCountByRoundIdAndUserId(reservation.roundId, request.userId)
-        val isReservationCountExceed = performance.maxReservationCount < reservation.tickets.size + paidTicketCount
-        if (isReservationCountExceed) throw BusinessException(RESERVATION_COUNT_EXCEED)
-
-        // 예매 확정 처리
-        val confirmedReservation = reservation.confirm(request.userId, request.paymentId)
-        // 결제 완료 처리
-        val completedPayment = paymentRepository.getById(request.paymentId).complete()
-
-        reservationRepository.save(confirmedReservation)
-        paymentRepository.save(completedPayment)
-    }
+    fun completePayment(request: PaymentCompleteRequest) =
+        try {
+            confirmPaymentInternalService.completePayment(request)
+        } catch (e: ObjectOptimisticLockingFailureException) {
+            throw BusinessException(CANNOT_COMPLETE)
+        }
 }

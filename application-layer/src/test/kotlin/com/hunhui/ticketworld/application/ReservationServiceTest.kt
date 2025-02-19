@@ -1,5 +1,6 @@
 package com.hunhui.ticketworld.application
 
+import com.hunhui.ticketworld.application.dto.request.LockMode
 import com.hunhui.ticketworld.application.dto.request.TempReserveRequest
 import com.hunhui.ticketworld.application.dto.response.TempReserveResponse
 import com.hunhui.ticketworld.application.dto.response.TicketListResponse
@@ -180,6 +181,7 @@ class ReservationServiceTest {
                 performanceId = performance.id,
                 userId = UUID.randomUUID(),
                 ticketIds = listOf(ticketId1, ticketId2),
+                lockMode = LockMode.OPTIMISTIC,
             )
 
         val reservationService =
@@ -269,6 +271,7 @@ class ReservationServiceTest {
                 performanceId = performance.id,
                 userId = UUID.randomUUID(),
                 ticketIds = listOf(ticketId1, ticketId2),
+                lockMode = LockMode.OPTIMISTIC,
             )
 
         val reservationService =
@@ -342,6 +345,7 @@ class ReservationServiceTest {
                 performanceId = performance.id,
                 userId = UUID.randomUUID(),
                 ticketIds = listOf(ticketId),
+                lockMode = LockMode.OPTIMISTIC,
             )
 
         val reservationService =

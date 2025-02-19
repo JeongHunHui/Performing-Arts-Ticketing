@@ -1,23 +1,20 @@
 package com.hunhui.ticketworld.infra.jpa.repository
 
 import com.hunhui.ticketworld.infra.jpa.entity.ReservationEntity
+import jakarta.persistence.LockModeType
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Query
 import java.util.UUID
 
 internal interface ReservationJpaRepository : JpaRepository<ReservationEntity, UUID> {
     @Query(
         """
-        SELECT COUNT(t)
+        SELECT r
         FROM ReservationEntity r
-        JOIN r.tickets t
-        WHERE t.performanceRoundId = :roundId
-        AND r.userId = :userId
-        AND t.isPaid = true
+        WHERE r.id = :id
         """,
     )
-    fun getPaidTicketCountByRoundIdAndUserId(
-        roundId: UUID,
-        userId: UUID,
-    ): Int
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    fun findByIdWithPessimistic(id: UUID): ReservationEntity?
 }

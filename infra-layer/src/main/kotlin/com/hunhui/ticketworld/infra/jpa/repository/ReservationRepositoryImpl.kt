@@ -7,8 +7,6 @@ import com.hunhui.ticketworld.domain.reservation.Ticket
 import com.hunhui.ticketworld.domain.reservation.exception.ReservationErrorCode.NOT_FOUND
 import com.hunhui.ticketworld.infra.jpa.entity.ReservationEntity
 import com.hunhui.ticketworld.infra.jpa.entity.TicketEntity
-import jakarta.persistence.LockModeType
-import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
 import java.util.UUID
@@ -20,8 +18,15 @@ internal class ReservationRepositoryImpl(
 ) : ReservationRepository {
     override fun getById(id: UUID): Reservation = reservationJpaRepository.findByIdOrNull(id)?.domain ?: throw BusinessException(NOT_FOUND)
 
-    @Lock(LockModeType.OPTIMISTIC)
+    override fun getByIdWithPessimistic(id: UUID): Reservation =
+        reservationJpaRepository.findByIdWithPessimistic(id)?.domain ?: throw BusinessException(NOT_FOUND)
+
     override fun getTicketsByIds(ids: List<UUID>): List<Ticket> = ticketJpaRepository.findAllById(ids).map { it.domain }
+
+    override fun getTicketsByIdsWithPessimistic(ids: List<UUID>): List<Ticket> =
+        ticketJpaRepository.findTicketsByIdsWithPessimistic(ids.sorted()).map {
+            it.domain
+        }
 
     override fun findTicketsByRoundIdAndAreaId(
         performanceRoundId: UUID,
@@ -41,10 +46,15 @@ internal class ReservationRepositoryImpl(
         reservationJpaRepository.saveAll(reservations.map { it.entity })
     }
 
-    override fun getPaidTicketCountByRoundIdAndUserId(
+    override fun getPaidTicketsByRoundIdAndUserId(
         roundId: UUID,
         userId: UUID,
-    ): Int = reservationJpaRepository.getPaidTicketCountByRoundIdAndUserId(roundId, userId)
+    ): List<Ticket> = ticketJpaRepository.getPaidTicketsByRoundIdAndUserId(roundId, userId).map { it.domain }
+
+    override fun getPaidTicketsByRoundIdAndUserIdWithPessimistic(
+        roundId: UUID,
+        userId: UUID,
+    ): List<Ticket> = ticketJpaRepository.getPaidTicketsByRoundIdAndUserIdWithPessimistic(roundId, userId).map { it.domain }
 
     private val ReservationEntity.domain: Reservation
         get() {

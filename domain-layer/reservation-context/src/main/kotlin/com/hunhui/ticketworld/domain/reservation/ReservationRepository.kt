@@ -5,7 +5,11 @@ import java.util.UUID
 interface ReservationRepository {
     fun getById(id: UUID): Reservation
 
+    fun getByIdWithPessimistic(id: UUID): Reservation
+
     fun getTicketsByIds(ids: List<UUID>): List<Ticket>
+
+    fun getTicketsByIdsWithPessimistic(ids: List<UUID>): List<Ticket>
 
     fun findTicketsByRoundIdAndAreaId(
         performanceRoundId: UUID,
@@ -18,8 +22,13 @@ interface ReservationRepository {
 
     fun saveAll(reservations: List<Reservation>)
 
-    fun getPaidTicketCountByRoundIdAndUserId(
+    fun getPaidTicketsByRoundIdAndUserId(
         roundId: UUID,
         userId: UUID,
-    ): Int
+    ): List<Ticket>
+
+    fun getPaidTicketsByRoundIdAndUserIdWithPessimistic(
+        roundId: UUID,
+        userId: UUID,
+    ): List<Ticket>
 }
