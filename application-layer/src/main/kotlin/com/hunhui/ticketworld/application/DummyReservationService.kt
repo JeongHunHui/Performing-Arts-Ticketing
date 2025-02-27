@@ -95,7 +95,7 @@ class DummyReservationService(
                 // 대상 회차 필터링
                 val targetRounds =
                     performance.rounds.filter {
-                        !it.isTicketCreated &&
+                        (!it.isTicketCreated || request.isTicketAlreadyExists) &&
                             it.roundStartTime in startDate..endDate &&
                             LocalDateTime.now().isBefore(it.reservationEndTime)
                     }
@@ -115,8 +115,23 @@ class DummyReservationService(
                 }
 
                 val seatAreas: List<SeatArea> = seatAreasMap[performance.id] ?: emptyList()
-                val tickets = createTickets(seatAreas, targetRounds)
+
+                val tickets =
+                    if (request.isTicketAlreadyExists) {
+                        seatAreas.flatMap { area ->
+                            targetRoundIdSet.flatMap { roundId ->
+                                reservationRepository.findTicketsByRoundIdAndAreaId(roundId, area.id)
+                            }
+                        }
+                    } else {
+                        createTickets(seatAreas, targetRounds)
+                    }
                 totalTicketsCount += tickets.size
+
+                logger.info(
+                    "[${index + 1}/${performances.size}] 대상 회차 ${targetRounds.size}개, 대상 구역 ${seatAreas.size}개, " +
+                        "티켓 ${tickets.size} (id: ${performance.id})",
+                )
 
                 if (isNoReservation) {
                     // 예약 없이 티켓만 저장하는 경우:
@@ -154,7 +169,6 @@ class DummyReservationService(
                             try {
                                 logger.info("[${index + 1}/${performances.size}] 예매 저장 작업 시작 (id: ${performance.id})")
                                 performanceRepository.save(performance)
-                                reservationRepository.saveNewTickets(tickets)
                                 reservationRepository.saveAll(reservations)
                                 paymentRepository.saveAll(payments)
                                 logger.info("[${index + 1}/${performances.size}] 예매 저장 작업 완료 (id: ${performance.id})")
@@ -232,7 +246,12 @@ class DummyReservationService(
                         userId = userId,
                         performanceId = performance.id,
                     )
-                val payment = Payment.create(userId = userId, paymentMethod = PaymentMethod.CREDIT_CARD)
+                val payment =
+                    Payment.create(
+                        userId = userId,
+                        roundId = reservation.roundId,
+                        paymentMethod = PaymentMethod.CREDIT_CARD,
+                    )
 
                 groupTickets.groupBy { it.seatGradeId }.forEach { (seatGradeId, ticketsGroup) ->
                     val seatGrade = seatGrades.first { it.id == seatGradeId }

@@ -8,6 +8,7 @@ import java.util.UUID
 class Payment(
     val id: UUID,
     val userId: UUID,
+    val roundId: UUID,
     val status: PaymentStatus,
     val method: PaymentMethod,
     val items: MutableList<PaymentItem>,
@@ -15,11 +16,13 @@ class Payment(
     companion object {
         fun create(
             userId: UUID,
+            roundId: UUID,
             paymentMethod: PaymentMethod,
         ): Payment =
             Payment(
                 id = UUID.randomUUID(),
                 userId = userId,
+                roundId = roundId,
                 status = PaymentStatus.PENDING,
                 method = paymentMethod,
                 items = mutableListOf(),
@@ -28,6 +31,9 @@ class Payment(
 
     val totalAmount: Money
         get() = Money(items.sumOf { it.discountedPrice.amount })
+
+    val ticketCount: Int
+        get() = items.sumOf { it.reservationCount }
 
     fun addItem(
         seatGradeName: String,
@@ -54,6 +60,7 @@ class Payment(
             id = id,
             status = PaymentStatus.COMPLETED,
             userId = userId,
+            roundId = roundId,
             method = method,
             items = items,
         )
@@ -64,6 +71,7 @@ class Payment(
             id = id,
             status = PaymentStatus.CANCELED,
             userId = userId,
+            roundId = roundId,
             method = method,
             items = items,
         )

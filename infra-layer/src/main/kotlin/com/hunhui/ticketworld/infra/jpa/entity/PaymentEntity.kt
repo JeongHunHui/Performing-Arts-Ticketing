@@ -22,6 +22,8 @@ internal class PaymentEntity(
     val id: UUID,
     @Column(name = "user_id", nullable = false)
     val userId: UUID,
+    @Column(name = "performance_round_id", nullable = false)
+    val performanceRoundId: UUID,
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     val status: PaymentStatus,

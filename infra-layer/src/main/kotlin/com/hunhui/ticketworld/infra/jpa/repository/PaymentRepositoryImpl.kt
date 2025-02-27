@@ -26,11 +26,28 @@ internal class PaymentRepositoryImpl(
         paymentJpaRepository.saveAll(payments.map { it.entity })
     }
 
+    override fun findAllPaymentByUserIdAndRoundId(
+        userId: UUID,
+        roundId: UUID,
+    ): List<Payment> =
+        paymentJpaRepository.findAllByUserIdAndPerformanceRoundId(userId, roundId).map {
+            it.domain
+        }
+
+    override fun findAllPaymentByUserIdAndRoundIdWithPessimistic(
+        userId: UUID,
+        roundId: UUID,
+    ): List<Payment> =
+        paymentJpaRepository.findAllByUserIdAndPerformanceRoundIdWithPessimistic(userId, roundId).map {
+            it.domain
+        }
+
     private val PaymentEntity.domain: Payment
         get() =
             Payment(
                 id = id,
                 userId = userId,
+                roundId = performanceRoundId,
                 status = status,
                 method = method,
                 items =
@@ -52,6 +69,7 @@ internal class PaymentRepositoryImpl(
             PaymentEntity(
                 id = id,
                 userId = userId,
+                performanceRoundId = roundId,
                 status = status,
                 method = method,
                 items =

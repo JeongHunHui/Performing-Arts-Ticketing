@@ -8,6 +8,7 @@ data class DummyReservationCreateRequest(
     val reservationRatio: Double,
     val minTicketsPerReservation: Int,
     val maxTicketsPerReservation: Int,
+    val isTicketAlreadyExists: Boolean,
     val isNoReservation: Boolean,
     val startDate: LocalDate?,
     val endDate: LocalDate?,

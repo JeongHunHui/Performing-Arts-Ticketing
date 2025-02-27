@@ -33,7 +33,13 @@ class PaymentService(
         val seatGrades: List<SeatGrade> = seatGradeRepository.findAllByPerformanceId(reservation.performanceId)
 
         // 결제 금액 계산 및 저장
-        val payment = Payment.create(userId = request.userId, paymentMethod = request.paymentMethod)
+        val payment =
+            Payment.create(
+                userId = request.userId,
+                roundId = reservation.roundId,
+                paymentMethod = request.paymentMethod,
+            )
+
         for (item in request.paymentItems) {
             val seatGrade: SeatGrade = seatGrades.first { it.id == item.seatGradeId }
 
