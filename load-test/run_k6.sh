@@ -1,8 +1,8 @@
 #!/bin/bash
-# 사용법: ./run_tests.sh <performanceId> <warmingUpRoundId> <mainRoundId> <mysqlContainerName> <mysqlUser> <mysqlPassword> <mysqlDatabase> <maxUser> <tempReserveLock> <selectReservationLock> <selectTicketsLock>
+# 사용법: ./run_tests.sh <performanceId> <warmingUpRoundId> <mainRoundId> <mysqlContainerName> <mysqlUser> <mysqlPassword> <mysqlDatabase> <maxUser> <tempReserveLock> <selectReservationLock> <selectTicketsLock> <iterationCount>
 
-if [ "$#" -ne 11 ]; then
-  echo "Usage: $0 <performanceId> <warmingUpRoundId> <mainRoundId> <mysqlContainerName> <mysqlUser> <mysqlPassword> <mysqlDatabase> <maxUser> <tempReserveLock> <selectReservationLock> <selectTicketsLock>"
+if [ "$#" -ne 12 ]; then
+  echo "Usage: $0 <performanceId> <warmingUpRoundId> <mainRoundId> <mysqlContainerName> <mysqlUser> <mysqlPassword> <mysqlDatabase> <maxUser> <tempReserveLock> <selectReservationLock> <selectTicketsLock> <iterationCount>"
   exit 1
 fi
 
@@ -17,6 +17,7 @@ MAX_USER=$8
 TEMP_RESERVE_LOCK=$9
 SELECT_RESERVATION_LOCK=${10}
 SELECT_TICKETS_LOCK=${11}
+ITERATION_COUNT=${12}
 
 # 현재 초(sec)를 가져와서 다음 0초까지 대기 시간 계산 함수
 function wait_for_zero_second() {
@@ -32,36 +33,39 @@ function wait_for_zero_second() {
   fi
 }
 
-echo "Starting warming up at $(date)"
-k6 run \
-  --env SLEEP_DURATION=0.5 \
-  --env PERFORMANCE_ID=$PERFORMANCE_ID \
-  --env ROUND_ID=$WARMING_UP_ROUND_ID \
-  --env MAX_USER=100 \
-  --env TEMP_RESERVE_LOCK=$TEMP_RESERVE_LOCK \
-  --env SELECT_RESERVATION_LOCK=$SELECT_RESERVATION_LOCK \
-  --env SELECT_TICKETS_LOCK=$SELECT_TICKETS_LOCK \
-  ReservationLoadTest.js
+for ((i=1; i<=ITERATION_COUNT; i++)); do
+  echo "===== Iteration $i 시작 ====="
 
-echo "Waiting 20 seconds for the next run..."
-sleep 20
+  echo "Starting warming up at $(date)"
+  k6 run \
+    --env SLEEP_DURATION=0.5 \
+    --env PERFORMANCE_ID=$PERFORMANCE_ID \
+    --env ROUND_ID=$WARMING_UP_ROUND_ID \
+    --env MAX_USER=100 \
+    --env TEMP_RESERVE_LOCK=$TEMP_RESERVE_LOCK \
+    --env SELECT_RESERVATION_LOCK=$SELECT_RESERVATION_LOCK \
+    --env SELECT_TICKETS_LOCK=$SELECT_TICKETS_LOCK \
+    ReservationLoadTest.js
 
-wait_for_zero_second
+  echo "Waiting 10 seconds for the next run..."
+  sleep 10
 
-echo "Starting ReservationLoadTest at $(date)"
-k6 run \
-  --out influxdb=http://localhost:8086/k6db \
-  --env SLEEP_DURATION=2 \
-  --env PERFORMANCE_ID=$PERFORMANCE_ID \
-  --env ROUND_ID=$MAIN_ROUND_ID \
-  --env MAX_USER=$MAX_USER \
-  --env TEMP_RESERVE_LOCK=$TEMP_RESERVE_LOCK \
-  --env SELECT_RESERVATION_LOCK=$SELECT_RESERVATION_LOCK \
-  --env SELECT_TICKETS_LOCK=$SELECT_TICKETS_LOCK \
-  ReservationLoadTest.js
+  wait_for_zero_second
 
-echo "Executing cleanup SQL query..."
-docker exec -i "$MYSQL_CONTAINER_NAME" mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" <<EOF
+  echo "Starting ReservationLoadTest at $(date)"
+  k6 run \
+    --out influxdb=http://localhost:8086/k6db \
+    --env SLEEP_DURATION=2 \
+    --env PERFORMANCE_ID=$PERFORMANCE_ID \
+    --env ROUND_ID=$MAIN_ROUND_ID \
+    --env MAX_USER=$MAX_USER \
+    --env TEMP_RESERVE_LOCK=$TEMP_RESERVE_LOCK \
+    --env SELECT_RESERVATION_LOCK=$SELECT_RESERVATION_LOCK \
+    --env SELECT_TICKETS_LOCK=$SELECT_TICKETS_LOCK \
+    ReservationLoadTest.js
+
+  echo "Executing cleanup SQL query..."
+  docker exec -i "$MYSQL_CONTAINER_NAME" mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" <<EOF
 START TRANSACTION;
 SET @performanceId = UUID_TO_BIN('$PERFORMANCE_ID');
 DELETE FROM payment_item pi
@@ -91,3 +95,19 @@ DELETE FROM reservation
 WHERE performance_id = @performanceId;
 COMMIT;
 EOF
+
+  echo "Restarting ticket-world-spring-1 container..."
+  docker restart performing-arts-ticketing-ticket-world-spring-1
+
+  echo "Restarting MySQL container ($MYSQL_CONTAINER_NAME)..."
+  docker restart "$MYSQL_CONTAINER_NAME"
+
+  echo "===== Iteration $i 완료 ====="
+
+  if [ $i -ne "$ITERATION_COUNT" ]; then
+    echo "Waiting 20 seconds before next iteration..."
+    sleep 20
+  fi
+done
+
+echo "모든 반복이 완료되었습니다."
