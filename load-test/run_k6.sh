@@ -105,8 +105,8 @@ EOF
   echo "===== Iteration $i 완료 ====="
 
   if [ $i -ne "$ITERATION_COUNT" ]; then
-    echo "Waiting 20 seconds before next iteration..."
-    sleep 20
+    echo "Waiting 30 seconds before next iteration..."
+    sleep 30
   fi
 done
 
