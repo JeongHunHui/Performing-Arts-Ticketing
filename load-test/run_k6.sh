@@ -1,8 +1,8 @@
 #!/bin/bash
 # 사용법: ./run_tests.sh <performanceId> <warmingUpRoundId> <mainRoundId> <mysqlContainerName> <mysqlUser> <mysqlPassword> <mysqlDatabase> <maxUser> <tempReserveLock> <selectReservationLock> <selectTicketsLock> <iterationCount>
 
-if [ "$#" -ne 12 ]; then
-  echo "Usage: $0 <performanceId> <warmingUpRoundId> <mainRoundId> <mysqlContainerName> <mysqlUser> <mysqlPassword> <mysqlDatabase> <maxUser> <tempReserveLock> <selectReservationLock> <selectTicketsLock> <iterationCount>"
+if [ "$#" -ne 9 ]; then
+  echo "Usage: $0 <performanceId> <warmingUpRoundId> <mainRoundId> <mysqlContainerName> <mysqlUser> <mysqlPassword> <mysqlDatabase> <maxUser> <iterationCount>"
   exit 1
 fi
 
@@ -14,10 +14,7 @@ MYSQL_USER=$5
 MYSQL_PASSWORD=$6
 MYSQL_DATABASE=$7
 MAX_USER=$8
-TEMP_RESERVE_LOCK=$9
-SELECT_RESERVATION_LOCK=${10}
-SELECT_TICKETS_LOCK=${11}
-ITERATION_COUNT=${12}
+ITERATION_COUNT=$9
 
 # 현재 초(sec)를 가져와서 다음 0초까지 대기 시간 계산 함수
 function wait_for_zero_second() {
@@ -42,9 +39,6 @@ for ((i=1; i<=ITERATION_COUNT; i++)); do
     --env PERFORMANCE_ID=$PERFORMANCE_ID \
     --env ROUND_ID=$WARMING_UP_ROUND_ID \
     --env MAX_USER=100 \
-    --env TEMP_RESERVE_LOCK=$TEMP_RESERVE_LOCK \
-    --env SELECT_RESERVATION_LOCK=$SELECT_RESERVATION_LOCK \
-    --env SELECT_TICKETS_LOCK=$SELECT_TICKETS_LOCK \
     ReservationLoadTest.js
 
   echo "Waiting 10 seconds for the next run..."
@@ -59,9 +53,6 @@ for ((i=1; i<=ITERATION_COUNT; i++)); do
     --env PERFORMANCE_ID=$PERFORMANCE_ID \
     --env ROUND_ID=$MAIN_ROUND_ID \
     --env MAX_USER=$MAX_USER \
-    --env TEMP_RESERVE_LOCK=$TEMP_RESERVE_LOCK \
-    --env SELECT_RESERVATION_LOCK=$SELECT_RESERVATION_LOCK \
-    --env SELECT_TICKETS_LOCK=$SELECT_TICKETS_LOCK \
     ReservationLoadTest.js
 
   echo "Executing cleanup SQL query..."

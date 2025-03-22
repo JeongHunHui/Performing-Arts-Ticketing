@@ -1,6 +1,5 @@
 package com.hunhui.ticketworld.application.internal
 
-import com.hunhui.ticketworld.application.dto.request.LockMode
 import com.hunhui.ticketworld.application.dto.request.PaymentCompleteRequest
 import com.hunhui.ticketworld.common.error.BusinessException
 import com.hunhui.ticketworld.domain.payment.PaymentRepository
@@ -23,11 +22,7 @@ class ConfirmPaymentInternalService(
         // TODO: 외부 결제 서버에 데이터 검증 요청
 
         // 예매 조회
-        val reservation: Reservation =
-            when (request.selectReservationLockMode) {
-                LockMode.PESSIMISTIC -> reservationRepository.getByIdWithPessimistic(request.reservationId)
-                LockMode.OPTIMISTIC -> reservationRepository.getById(request.reservationId)
-            }
+        val reservation: Reservation = reservationRepository.getById(request.reservationId)
 
         // 예매 가능한 회차인지 확인
         val performance = performanceRepository.getByIdAndRoundId(reservation.performanceId, reservation.roundId)
@@ -35,14 +30,11 @@ class ConfirmPaymentInternalService(
 
         // 예매 가능한 수량인지 확인
         val paidTicketCount: Int =
-            when (request.selectTicketsLockMode) {
-                LockMode.PESSIMISTIC ->
-                    reservationRepository.getPaidTicketsByRoundIdAndUserIdWithPessimistic(
-                        reservation.roundId,
-                        request.userId,
-                    )
-                else -> reservationRepository.getPaidTicketsByRoundIdAndUserId(reservation.roundId, request.userId)
-            }.size
+            reservationRepository
+                .getPaidTicketsByRoundIdAndUserIdWithPessimistic(
+                    reservation.roundId,
+                    request.userId,
+                ).size
         val isReservationCountExceed = performance.maxReservationCount < reservation.tickets.size + paidTicketCount
         if (isReservationCountExceed) throw BusinessException(RESERVATION_COUNT_EXCEED)
 

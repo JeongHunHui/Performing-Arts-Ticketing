@@ -1,6 +1,5 @@
 package com.hunhui.ticketworld.application
 
-import com.hunhui.ticketworld.application.dto.request.LockMode
 import com.hunhui.ticketworld.application.dto.request.PaymentCompleteRequest
 import com.hunhui.ticketworld.application.dto.request.PaymentStartRequest
 import com.hunhui.ticketworld.application.dto.response.PaymentStartResponse
@@ -271,8 +270,6 @@ class PaymentServiceTest {
                 paymentId = payment.id,
                 userId = userId,
                 reservationId = reservation.id,
-                selectReservationLockMode = LockMode.OPTIMISTIC,
-                selectTicketsLockMode = LockMode.OPTIMISTIC,
             )
 
         val paymentService =
@@ -366,8 +363,6 @@ class PaymentServiceTest {
                 paymentId = payment.id,
                 userId = userId,
                 reservationId = reservation.id,
-                selectReservationLockMode = LockMode.OPTIMISTIC,
-                selectTicketsLockMode = LockMode.OPTIMISTIC,
             )
 
         val paymentService =

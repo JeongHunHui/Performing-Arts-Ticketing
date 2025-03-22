@@ -18,15 +18,7 @@ internal class ReservationRepositoryImpl(
 ) : ReservationRepository {
     override fun getById(id: UUID): Reservation = reservationJpaRepository.findByIdOrNull(id)?.domain ?: throw BusinessException(NOT_FOUND)
 
-    override fun getByIdWithPessimistic(id: UUID): Reservation =
-        reservationJpaRepository.findByIdWithPessimistic(id)?.domain ?: throw BusinessException(NOT_FOUND)
-
     override fun getTicketsByIds(ids: List<UUID>): List<Ticket> = ticketJpaRepository.findAllById(ids).map { it.domain }
-
-    override fun getTicketsByIdsWithPessimistic(ids: List<UUID>): List<Ticket> =
-        ticketJpaRepository.findTicketsByIdsWithPessimistic(ids.sorted()).map {
-            it.domain
-        }
 
     override fun findTicketsByRoundIdAndAreaId(
         performanceRoundId: UUID,
@@ -45,11 +37,6 @@ internal class ReservationRepositoryImpl(
     override fun saveAll(reservations: List<Reservation>) {
         reservationJpaRepository.saveAll(reservations.map { it.entity })
     }
-
-    override fun getPaidTicketsByRoundIdAndUserId(
-        roundId: UUID,
-        userId: UUID,
-    ): List<Ticket> = ticketJpaRepository.getPaidTicketsByRoundIdAndUserId(roundId, userId).map { it.domain }
 
     override fun getPaidTicketsByRoundIdAndUserIdWithPessimistic(
         roundId: UUID,

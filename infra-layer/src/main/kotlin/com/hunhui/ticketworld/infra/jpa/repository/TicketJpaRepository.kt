@@ -15,31 +15,6 @@ internal interface TicketJpaRepository : JpaRepository<TicketEntity, UUID> {
 
     @Query(
         """
-        SELECT t 
-        FROM TicketEntity t 
-        WHERE t.id IN :ids
-        """,
-    )
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    fun findTicketsByIdsWithPessimistic(ids: List<UUID>): List<TicketEntity>
-
-    @Query(
-        """
-        SELECT t
-        FROM ReservationEntity r
-        JOIN r.tickets t
-        WHERE t.performanceRoundId = :roundId
-        AND r.userId = :userId
-        AND t.isPaid = true
-        """,
-    )
-    fun getPaidTicketsByRoundIdAndUserId(
-        roundId: UUID,
-        userId: UUID,
-    ): List<TicketEntity>
-
-    @Query(
-        """
         SELECT t
         FROM ReservationEntity r
         JOIN r.tickets t
