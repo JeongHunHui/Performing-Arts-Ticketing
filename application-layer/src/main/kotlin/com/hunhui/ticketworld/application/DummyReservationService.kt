@@ -249,6 +249,7 @@ class DummyReservationService(
                 val payment =
                     Payment.create(
                         userId = userId,
+                        performanceId = reservation.performanceId,
                         roundId = reservation.roundId,
                         paymentMethod = PaymentMethod.CREDIT_CARD,
                     )

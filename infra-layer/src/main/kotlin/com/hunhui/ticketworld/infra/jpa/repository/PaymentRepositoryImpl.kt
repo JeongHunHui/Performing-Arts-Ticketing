@@ -47,6 +47,7 @@ internal class PaymentRepositoryImpl(
             Payment(
                 id = id,
                 userId = userId,
+                performanceId = performanceId,
                 roundId = performanceRoundId,
                 status = status,
                 method = method,
@@ -69,6 +70,7 @@ internal class PaymentRepositoryImpl(
             PaymentEntity(
                 id = id,
                 userId = userId,
+                performanceId = performanceId,
                 performanceRoundId = roundId,
                 status = status,
                 method = method,

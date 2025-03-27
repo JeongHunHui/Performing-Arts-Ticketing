@@ -256,7 +256,7 @@ class PaymentServiceTest {
             )
 
         // Payment 생성 (PENDING 상태)
-        val payment = Payment.create(userId, performanceRoundId, PaymentMethod.CREDIT_CARD)
+        val payment = Payment.create(userId, performanceId, performanceRoundId, PaymentMethod.CREDIT_CARD)
         // Payment는 Payment.create()로 생성 시 PENDING 상태로 설정됨
 
         // Fake Repository들에 객체 저장
@@ -351,7 +351,7 @@ class PaymentServiceTest {
             )
 
         // Payment 생성 (PENDING 상태)
-        val payment = Payment.create(userId, performanceRoundId, PaymentMethod.CREDIT_CARD)
+        val payment = Payment.create(userId, performanceId, performanceRoundId, PaymentMethod.CREDIT_CARD)
 
         // Fake Repository들에 객체 저장
         val reservationRepository = FakeReservationRepository().apply { save(reservation) }

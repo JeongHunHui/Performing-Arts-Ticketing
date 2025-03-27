@@ -36,6 +36,7 @@ class PaymentService(
         val payment =
             Payment.create(
                 userId = request.userId,
+                performanceId = reservation.performanceId,
                 roundId = reservation.roundId,
                 paymentMethod = request.paymentMethod,
             )

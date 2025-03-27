@@ -8,6 +8,7 @@ import java.util.UUID
 class Payment(
     val id: UUID,
     val userId: UUID,
+    val performanceId: UUID,
     val roundId: UUID,
     val status: PaymentStatus,
     val method: PaymentMethod,
@@ -16,12 +17,14 @@ class Payment(
     companion object {
         fun create(
             userId: UUID,
+            performanceId: UUID,
             roundId: UUID,
             paymentMethod: PaymentMethod,
         ): Payment =
             Payment(
                 id = UUID.randomUUID(),
                 userId = userId,
+                performanceId = performanceId,
                 roundId = roundId,
                 status = PaymentStatus.PENDING,
                 method = paymentMethod,
@@ -60,6 +63,7 @@ class Payment(
             id = id,
             status = PaymentStatus.COMPLETED,
             userId = userId,
+            performanceId = performanceId,
             roundId = roundId,
             method = method,
             items = items,
@@ -71,6 +75,7 @@ class Payment(
             id = id,
             status = PaymentStatus.CANCELED,
             userId = userId,
+            performanceId = performanceId,
             roundId = roundId,
             method = method,
             items = items,
