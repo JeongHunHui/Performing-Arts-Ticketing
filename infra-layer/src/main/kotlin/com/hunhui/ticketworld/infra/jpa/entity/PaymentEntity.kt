@@ -12,6 +12,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Entity
@@ -32,6 +33,8 @@ internal class PaymentEntity(
     @Enumerated(EnumType.STRING)
     @Column(name = "method", nullable = false)
     val method: PaymentMethod,
+    @Column(name = "paid_at", nullable = true)
+    val paidAt: LocalDateTime?,
     @OneToMany(
         cascade = [CascadeType.ALL],
         orphanRemoval = true,

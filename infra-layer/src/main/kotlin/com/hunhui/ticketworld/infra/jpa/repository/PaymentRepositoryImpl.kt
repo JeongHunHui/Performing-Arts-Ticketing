@@ -51,6 +51,7 @@ internal class PaymentRepositoryImpl(
                 roundId = performanceRoundId,
                 status = status,
                 method = method,
+                paidAt = paidAt,
                 items =
                     items
                         .map {
@@ -74,6 +75,7 @@ internal class PaymentRepositoryImpl(
                 performanceRoundId = roundId,
                 status = status,
                 method = method,
+                paidAt = paidAt,
                 items =
                     items.map {
                         PaymentItemEntity(

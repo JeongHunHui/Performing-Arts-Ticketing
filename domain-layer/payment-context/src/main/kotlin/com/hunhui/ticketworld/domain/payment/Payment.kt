@@ -3,6 +3,7 @@ package com.hunhui.ticketworld.domain.payment
 import com.hunhui.ticketworld.common.error.BusinessException
 import com.hunhui.ticketworld.common.vo.Money
 import com.hunhui.ticketworld.domain.payment.exception.PaymentErrorCode.CANNOT_COMPLETE
+import java.time.LocalDateTime
 import java.util.UUID
 
 class Payment(
@@ -12,6 +13,7 @@ class Payment(
     val roundId: UUID,
     val status: PaymentStatus,
     val method: PaymentMethod,
+    val paidAt: LocalDateTime?,
     val items: MutableList<PaymentItem>,
 ) {
     companion object {
@@ -28,6 +30,7 @@ class Payment(
                 roundId = roundId,
                 status = PaymentStatus.PENDING,
                 method = paymentMethod,
+                paidAt = null,
                 items = mutableListOf(),
             )
     }
@@ -66,6 +69,7 @@ class Payment(
             performanceId = performanceId,
             roundId = roundId,
             method = method,
+            paidAt = LocalDateTime.now(),
             items = items,
         )
     }
@@ -78,6 +82,7 @@ class Payment(
             performanceId = performanceId,
             roundId = roundId,
             method = method,
+            paidAt = paidAt,
             items = items,
         )
 }
