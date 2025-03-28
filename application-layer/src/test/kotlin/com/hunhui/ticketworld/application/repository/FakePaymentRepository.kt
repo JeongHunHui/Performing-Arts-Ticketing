@@ -2,8 +2,10 @@ package com.hunhui.ticketworld.application.repository
 
 import com.hunhui.ticketworld.common.error.BusinessException
 import com.hunhui.ticketworld.domain.payment.Payment
+import com.hunhui.ticketworld.domain.payment.PaymentCount
 import com.hunhui.ticketworld.domain.payment.PaymentRepository
 import com.hunhui.ticketworld.domain.payment.exception.PaymentErrorCode
+import java.time.LocalDateTime
 import java.util.UUID
 
 class FakePaymentRepository : PaymentRepository {
@@ -32,6 +34,13 @@ class FakePaymentRepository : PaymentRepository {
         payments.values.filter {
             it.userId == userId && it.roundId == roundId
         }
+
+    override fun getPaymentCountsByTimeRange(
+        previousStandardTime: LocalDateTime,
+        standardTime: LocalDateTime,
+    ): List<PaymentCount> {
+        TODO("Not yet implemented")
+    }
 
     override fun getById(id: UUID): Payment = payments[id] ?: throw BusinessException(PaymentErrorCode.NOT_FOUND)
 }

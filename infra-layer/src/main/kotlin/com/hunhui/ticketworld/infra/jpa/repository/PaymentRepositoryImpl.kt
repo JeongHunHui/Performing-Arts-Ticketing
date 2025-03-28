@@ -3,6 +3,7 @@ package com.hunhui.ticketworld.infra.jpa.repository
 import com.hunhui.ticketworld.common.error.BusinessException
 import com.hunhui.ticketworld.common.vo.Money
 import com.hunhui.ticketworld.domain.payment.Payment
+import com.hunhui.ticketworld.domain.payment.PaymentCount
 import com.hunhui.ticketworld.domain.payment.PaymentItem
 import com.hunhui.ticketworld.domain.payment.PaymentRepository
 import com.hunhui.ticketworld.domain.payment.exception.PaymentErrorCode.NOT_FOUND
@@ -10,6 +11,7 @@ import com.hunhui.ticketworld.infra.jpa.entity.PaymentEntity
 import com.hunhui.ticketworld.infra.jpa.entity.PaymentItemEntity
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Repository
@@ -41,6 +43,11 @@ internal class PaymentRepositoryImpl(
         paymentJpaRepository.findAllByUserIdAndPerformanceRoundIdWithPessimistic(userId, roundId).map {
             it.domain
         }
+
+    override fun getPaymentCountsByTimeRange(
+        previousStandardTime: LocalDateTime,
+        standardTime: LocalDateTime,
+    ): List<PaymentCount> = paymentJpaRepository.getPaymentCountsByTimeRange(previousStandardTime, standardTime)
 
     private val PaymentEntity.domain: Payment
         get() =

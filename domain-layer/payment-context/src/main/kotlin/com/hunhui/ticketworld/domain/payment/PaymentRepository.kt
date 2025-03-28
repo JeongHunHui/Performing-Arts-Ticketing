@@ -1,5 +1,6 @@
 package com.hunhui.ticketworld.domain.payment
 
+import java.time.LocalDateTime
 import java.util.UUID
 
 interface PaymentRepository {
@@ -18,4 +19,9 @@ interface PaymentRepository {
         userId: UUID,
         roundId: UUID,
     ): List<Payment>
+
+    fun getPaymentCountsByTimeRange(
+        previousStandardTime: LocalDateTime,
+        standardTime: LocalDateTime,
+    ): List<PaymentCount>
 }
