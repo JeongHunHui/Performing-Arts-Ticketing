@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":domain-layer:seat-area-context"))
     implementation(project(":domain-layer:user-context"))
     implementation(project(":domain-layer:reservation-context"))
+    implementation(project(":domain-layer:reservation-statistics-context"))
     implementation(project(":domain-layer:seat-grade-context"))
     implementation(project(":domain-layer:payment-context"))
     implementation(project(":domain-layer:kopis-context"))
