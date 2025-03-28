@@ -1,5 +1,6 @@
 rootProject.name = "ticket-world"
 include("common")
+include("batch")
 include("web-api")
 include("infra-layer")
 include("application-layer")

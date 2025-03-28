@@ -1,0 +1,13 @@
+spring:
+    application:
+        name: batch
+    profiles.include:
+        - infra
+        - infra-secret
+    batch:
+        job:
+            enabled: false
+        jdbc:
+            initialize-schema: never
+server:
+    port: 8081
