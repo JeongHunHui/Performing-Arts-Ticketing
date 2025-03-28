@@ -49,6 +49,23 @@ internal interface PerformanceJpaRepository : JpaRepository<PerformanceEntity, U
 
     @Query(
         """
+        SELECT new com.hunhui.ticketworld.domain.performance.PerformanceSummary(
+            p.id,
+            p.title,
+            p.genre,
+            p.startDate,
+            p.finishDate,
+            p.posterUrl,
+            p.location
+        )
+        FROM PerformanceEntity p
+        WHERE p.id IN :ids
+        """,
+    )
+    fun findAllPerformanceSummariesByIds(ids: List<UUID>): List<PerformanceSummary>
+
+    @Query(
+        """
         SELECT p 
         FROM PerformanceEntity p 
         LEFT JOIN FETCH p.rounds r 

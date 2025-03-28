@@ -73,8 +73,18 @@ internal class PerformanceRepositoryImpl(
         return performancesWithPage.content.map { it.domain } to performancesWithPage.totalPages
     }
 
+    override fun findAllPerformanceSummariesByIds(ids: List<UUID>): List<PerformanceSummary> =
+        performanceJpaRepository.findAllPerformanceSummariesByIds(ids)
+
     override fun save(performance: Performance) {
         performanceJpaRepository.save(performance.entity)
+    }
+
+    override fun savePopularPerformanceSummaries(
+        popularityOption: PopularityOption,
+        popularPerformanceSummaries: PopularPerformanceSummaries,
+    ) {
+        redisTemplate.opsForValue().set(makeKey(popularityOption), popularPerformanceSummaries)
     }
 
     private val PerformanceEntity.domain: Performance

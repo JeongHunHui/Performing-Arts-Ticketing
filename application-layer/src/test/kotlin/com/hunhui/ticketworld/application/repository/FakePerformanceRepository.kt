@@ -18,6 +18,13 @@ class FakePerformanceRepository : PerformanceRepository {
         performances[performance.id] = performance
     }
 
+    override fun savePopularPerformanceSummaries(
+        popularityOption: PopularityOption,
+        popularPerformanceSummaries: PopularPerformanceSummaries,
+    ) {
+        TODO("Not yet implemented")
+    }
+
     override fun getById(id: UUID): Performance = performances[id] ?: throw BusinessException(NOT_FOUND)
 
     override fun getByIdAndRoundId(
@@ -51,6 +58,10 @@ class FakePerformanceRepository : PerformanceRepository {
         page: Int,
         size: Int,
     ): Pair<List<Performance>, Int> {
+        TODO("Not yet implemented")
+    }
+
+    override fun findAllPerformanceSummariesByIds(ids: List<UUID>): List<PerformanceSummary> {
         TODO("Not yet implemented")
     }
 }

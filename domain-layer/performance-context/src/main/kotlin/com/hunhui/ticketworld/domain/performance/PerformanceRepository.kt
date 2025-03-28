@@ -26,5 +26,12 @@ interface PerformanceRepository {
         size: Int,
     ): Pair<List<Performance>, Int>
 
+    fun findAllPerformanceSummariesByIds(ids: List<UUID>): List<PerformanceSummary>
+
     fun save(performance: Performance)
+
+    fun savePopularPerformanceSummaries(
+        popularityOption: PopularityOption,
+        popularPerformanceSummaries: PopularPerformanceSummaries,
+    )
 }
