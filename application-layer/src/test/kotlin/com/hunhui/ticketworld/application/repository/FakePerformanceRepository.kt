@@ -3,6 +3,10 @@ package com.hunhui.ticketworld.application.repository
 import com.hunhui.ticketworld.common.error.BusinessException
 import com.hunhui.ticketworld.domain.performance.Performance
 import com.hunhui.ticketworld.domain.performance.PerformanceRepository
+import com.hunhui.ticketworld.domain.performance.PerformanceSortOption
+import com.hunhui.ticketworld.domain.performance.PerformanceSummary
+import com.hunhui.ticketworld.domain.performance.PopularPerformanceSummaries
+import com.hunhui.ticketworld.domain.performance.PopularityOption
 import com.hunhui.ticketworld.domain.performance.exception.PerformanceErrorCode.NOT_FOUND
 import java.util.UUID
 
@@ -27,6 +31,19 @@ class FakePerformanceRepository : PerformanceRepository {
     }
 
     override fun findByKopisId(kopisId: String): Performance? {
+        TODO("Not yet implemented")
+    }
+
+    override fun findAllPerformanceSummaries(
+        page: Int,
+        size: Int,
+        performanceSortOption: PerformanceSortOption,
+        isAsc: Boolean,
+    ): Pair<List<PerformanceSummary>, Int> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getPopularPerformanceSummaries(popularityOption: PopularityOption): PopularPerformanceSummaries {
         TODO("Not yet implemented")
     }
 

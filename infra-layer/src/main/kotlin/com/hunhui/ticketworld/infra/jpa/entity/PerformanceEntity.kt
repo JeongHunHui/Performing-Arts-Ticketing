@@ -57,7 +57,7 @@ internal class PerformanceEntity(
     @OneToMany(
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
-        fetch = FetchType.EAGER,
+        fetch = FetchType.LAZY,
     )
     @JoinColumn(name = "performance_id")
     val rounds: List<PerformanceRoundEntity> = emptyList(),

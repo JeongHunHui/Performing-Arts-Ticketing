@@ -1,7 +1,7 @@
 package com.hunhui.ticketworld.application.dto.response
 
-import com.hunhui.ticketworld.domain.performance.Performance
 import com.hunhui.ticketworld.domain.performance.PerformanceGenre
+import com.hunhui.ticketworld.domain.performance.PerformanceSummary
 import java.time.LocalDate
 import java.util.UUID
 
@@ -11,20 +11,20 @@ data class PerformanceSummaryListResponse(
 ) {
     companion object {
         fun of(
-            performances: List<Performance>,
             totalPages: Int,
+            performanceSummaries: List<PerformanceSummary>,
         ) = PerformanceSummaryListResponse(
             totalPages = totalPages,
             performances =
-                performances.map {
+                performanceSummaries.map {
                     PerformanceSummaryResponse(
                         id = it.id,
-                        title = it.info.title,
-                        genre = it.info.genre,
+                        title = it.title,
+                        genre = it.genre,
                         startDate = it.startDate,
                         finishDate = it.finishDate,
-                        posterUrl = it.info.posterUrl,
-                        location = it.info.location,
+                        posterUrl = it.posterUrl,
+                        location = it.location,
                     )
                 },
         )

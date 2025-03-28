@@ -1,5 +1,6 @@
 package com.hunhui.ticketworld.infra.jpa.repository
 
+import com.hunhui.ticketworld.domain.performance.PerformanceSummary
 import com.hunhui.ticketworld.infra.jpa.entity.PerformanceEntity
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -24,11 +25,27 @@ internal interface PerformanceJpaRepository : JpaRepository<PerformanceEntity, U
         """
         SELECT DISTINCT p
         FROM PerformanceEntity p 
-        LEFT JOIN FETCH p.rounds r 
+        LEFT JOIN FETCH p.rounds r
         ORDER BY p.startDate ASC
-    """,
+        """,
     )
     fun findAllOrderByEarliestRound(pageable: Pageable): Page<PerformanceEntity>
+
+    @Query(
+        """
+        SELECT new com.hunhui.ticketworld.domain.performance.PerformanceSummary(
+            p.id,
+            p.title,
+            p.genre,
+            p.startDate,
+            p.finishDate,
+            p.posterUrl,
+            p.location
+        )
+        FROM PerformanceEntity p
+        """,
+    )
+    fun findAllPerformanceSummaries(pageable: Pageable): Page<PerformanceSummary>
 
     @Query(
         """

@@ -12,6 +12,15 @@ interface PerformanceRepository {
 
     fun findByKopisId(kopisId: String): Performance?
 
+    fun findAllPerformanceSummaries(
+        page: Int,
+        size: Int,
+        performanceSortOption: PerformanceSortOption,
+        isAsc: Boolean,
+    ): Pair<List<PerformanceSummary>, Int>
+
+    fun getPopularPerformanceSummaries(popularityOption: PopularityOption): PopularPerformanceSummaries
+
     fun findAllWithPagenation(
         page: Int,
         size: Int,

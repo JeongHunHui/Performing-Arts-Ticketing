@@ -4,9 +4,12 @@ import com.hunhui.ticketworld.application.dto.request.PerformanceCreateRequest
 import com.hunhui.ticketworld.application.dto.response.PerformanceCreateResponse
 import com.hunhui.ticketworld.application.dto.response.PerformanceResponse
 import com.hunhui.ticketworld.application.dto.response.PerformanceSummaryListResponse
+import com.hunhui.ticketworld.application.dto.response.PopularPerformanceSummaryListResponse
 import com.hunhui.ticketworld.application.dto.response.SeatAreasResponse
 import com.hunhui.ticketworld.domain.performance.PerformanceRepository
 import com.hunhui.ticketworld.domain.performance.PerformanceRound
+import com.hunhui.ticketworld.domain.performance.PerformanceSortOption
+import com.hunhui.ticketworld.domain.performance.PopularityOption
 import com.hunhui.ticketworld.domain.reservation.ReservationRepository
 import com.hunhui.ticketworld.domain.reservation.Ticket
 import com.hunhui.ticketworld.domain.seatarea.SeatArea
@@ -33,9 +36,16 @@ class PerformanceService(
     fun getPerformanceSummaryList(
         page: Int,
         size: Int,
+        performanceSortOption: PerformanceSortOption,
+        isAsc: Boolean,
     ): PerformanceSummaryListResponse {
-        val (performances, totalPages) = performanceRepository.findAllWithPagenation(page, size)
-        return PerformanceSummaryListResponse.of(performances, totalPages)
+        val (performances, totalPages) = performanceRepository.findAllPerformanceSummaries(page, size, performanceSortOption, isAsc)
+        return PerformanceSummaryListResponse.of(totalPages, performances)
+    }
+
+    fun getPopularPerformanceSummaryList(popularityOption: PopularityOption): PopularPerformanceSummaryListResponse {
+        val popularPerformanceSummaries = performanceRepository.getPopularPerformanceSummaries(popularityOption)
+        return PopularPerformanceSummaryListResponse.from(popularPerformanceSummaries)
     }
 
     @Transactional

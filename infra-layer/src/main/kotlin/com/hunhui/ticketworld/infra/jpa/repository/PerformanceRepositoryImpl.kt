@@ -5,18 +5,31 @@ import com.hunhui.ticketworld.domain.performance.Performance
 import com.hunhui.ticketworld.domain.performance.PerformanceInfo
 import com.hunhui.ticketworld.domain.performance.PerformanceRepository
 import com.hunhui.ticketworld.domain.performance.PerformanceRound
+import com.hunhui.ticketworld.domain.performance.PerformanceSortOption
+import com.hunhui.ticketworld.domain.performance.PerformanceSummary
+import com.hunhui.ticketworld.domain.performance.PopularPerformanceSummaries
+import com.hunhui.ticketworld.domain.performance.PopularityOption
 import com.hunhui.ticketworld.domain.performance.exception.PerformanceErrorCode.NOT_FOUND
+import com.hunhui.ticketworld.domain.performance.exception.PerformanceErrorCode.POPULAR_PERFORMANCE_NOT_FOUND
 import com.hunhui.ticketworld.infra.jpa.entity.PerformanceEntity
 import com.hunhui.ticketworld.infra.jpa.entity.PerformanceRoundEntity
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Repository
 import java.util.UUID
 
 @Repository
 internal class PerformanceRepositoryImpl(
     private val performanceJpaRepository: PerformanceJpaRepository,
+    private val redisTemplate: RedisTemplate<String, Any>,
 ) : PerformanceRepository {
+    companion object {
+        private fun makeKey(popularityOption: PopularityOption): String = "popular_performance:$popularityOption"
+    }
+
     override fun getById(id: UUID): Performance = performanceJpaRepository.findByIdOrNull(id)?.domain ?: throw BusinessException(NOT_FOUND)
 
     override fun getByIdAndRoundId(
@@ -25,6 +38,31 @@ internal class PerformanceRepositoryImpl(
     ): Performance = performanceJpaRepository.findByIdAndRoundId(performanceId, roundId)?.domain ?: throw BusinessException(NOT_FOUND)
 
     override fun findByKopisId(kopisId: String): Performance? = performanceJpaRepository.findByKopisId(kopisId)?.domain
+
+    override fun findAllPerformanceSummaries(
+        page: Int,
+        size: Int,
+        performanceSortOption: PerformanceSortOption,
+        isAsc: Boolean,
+    ): Pair<List<PerformanceSummary>, Int> =
+        when (performanceSortOption) {
+            PerformanceSortOption.START_DATE -> {
+                val sort = if (isAsc) Sort.by("startDate").ascending() else Sort.by("startDate").descending()
+                val pageable = PageRequest.of(page, size, sort)
+                val performancesWithPage: Page<PerformanceSummary> = performanceJpaRepository.findAllPerformanceSummaries(pageable)
+                performancesWithPage.content to performancesWithPage.totalPages
+            }
+        }
+
+    override fun getPopularPerformanceSummaries(popularityOption: PopularityOption): PopularPerformanceSummaries =
+        when (popularityOption) {
+            PopularityOption.DAILY -> {
+                println(makeKey(popularityOption))
+                println(redisTemplate.opsForValue().get(makeKey(popularityOption)))
+                redisTemplate.opsForValue().get(makeKey(popularityOption)) as? PopularPerformanceSummaries
+                    ?: throw BusinessException(POPULAR_PERFORMANCE_NOT_FOUND)
+            }
+        }
 
     override fun findAllWithPagenation(
         page: Int,
