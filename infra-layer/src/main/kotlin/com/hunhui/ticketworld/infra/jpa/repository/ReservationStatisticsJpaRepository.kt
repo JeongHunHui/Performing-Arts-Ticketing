@@ -14,8 +14,8 @@ internal interface ReservationStatisticsJpaRepository : JpaRepository<Reservatio
             WITH counts AS (
                 SELECT rs.performance_id, SUM(rs.count) AS count
                 FROM reservation_statistics rs
-                WHERE rs.standard_time >= :startTime
-                  AND rs.standard_time < :standardTime
+                WHERE rs.standard_time > :startTime
+                  AND rs.standard_time <= :standardTime
                 GROUP BY rs.performance_id
                 ORDER BY count DESC
                 LIMIT :size
@@ -27,8 +27,8 @@ internal interface ReservationStatisticsJpaRepository : JpaRepository<Reservatio
                  (
                      SELECT SUM(rs2.count) AS total_count
                      FROM reservation_statistics rs2
-                     WHERE rs2.standard_time >= :startTime
-                       AND rs2.standard_time < :standardTime
+                     WHERE rs2.standard_time > :startTime
+                       AND rs2.standard_time <= :standardTime
                  ) total
         """,
         nativeQuery = true,
