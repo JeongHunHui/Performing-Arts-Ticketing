@@ -5,7 +5,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
-class PopularPerformanceSummaries(
+data class PopularPerformanceSummaries(
     val standardTime: LocalDateTime,
     val performances: List<PopularPerformanceSummary>,
 ) {
