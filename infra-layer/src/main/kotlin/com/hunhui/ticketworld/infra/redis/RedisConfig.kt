@@ -1,6 +1,8 @@
 package com.hunhui.ticketworld.infra.redis
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.springframework.beans.factory.annotation.Value
@@ -35,14 +37,17 @@ class RedisConfig(
     @Bean
     fun redisTemplate(redisConnectionFactory: RedisConnectionFactory): RedisTemplate<String, Any> {
         val objectMapper =
-            ObjectMapper().apply {
-                registerModule(JavaTimeModule())
-                registerKotlinModule()
-                activateDefaultTyping(
-                    polymorphicTypeValidator,
-                    ObjectMapper.DefaultTyping.NON_FINAL,
+            ObjectMapper()
+                .registerModule(JavaTimeModule())
+                .registerKotlinModule()
+                .activateDefaultTyping(
+                    BasicPolymorphicTypeValidator
+                        .builder()
+                        .allowIfBaseType(Any::class.java)
+                        .build(),
+                    ObjectMapper.DefaultTyping.EVERYTHING,
+                    JsonTypeInfo.As.PROPERTY,
                 )
-            }
         val serializer = GenericJackson2JsonRedisSerializer(objectMapper)
         return RedisTemplate<String, Any>().apply {
             connectionFactory = redisConnectionFactory

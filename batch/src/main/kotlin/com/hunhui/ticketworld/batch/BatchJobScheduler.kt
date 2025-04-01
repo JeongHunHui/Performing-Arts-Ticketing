@@ -20,7 +20,7 @@ class BatchJobScheduler(
      * cachePopularPerformance는 0시 부터 standardTime까지 공연 별 예매율을 계산하고, 이를 바탕으로 TOP 50 공연을 Redis에 캐싱
      */
     @Schedules(
-        Scheduled(cron = "0 01 10-23 * * ?"),
+        Scheduled(cron = "0 30 10-23 * * ?"),
         Scheduled(cron = "0 0 0 * * ?"),
     )
     fun runDailyPopularPerformanceJobs() {
